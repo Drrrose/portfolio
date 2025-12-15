@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Mail, MessageSquare } from "lucide-react";
+import { Mail, Send } from "lucide-react";
 import Link from "next/link";
 import { RESUME } from "@/data/resume";
 
@@ -31,12 +31,12 @@ export function Contact() {
                 {RESUME.contact.email}
              </Link>
              <Link
-                 href={RESUME.contact.social.LinkedIn.url}
+                 href={RESUME.contact.social.WhatsApp.url}
                  target="_blank"
                  className="inline-flex items-center justify-center px-8 py-4 text-base font-medium rounded-full border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors w-full sm:w-auto"
              >
-                <MessageSquare className="w-5 h-5 mr-2" />
-                Connect on LinkedIn
+                <Send className="w-5 h-5 mr-2" />
+                Message on WhatsApp
              </Link>
         </div>
       </motion.div>

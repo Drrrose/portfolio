@@ -1,4 +1,4 @@
-import { Code2, Database, Layout, Server, Settings, Terminal } from "lucide-react";
+import { Code2, Database, Layout, Server, Settings, Terminal, Send } from "lucide-react";
 
 export const RESUME = {
   name: "Mostafa Ali",
@@ -20,15 +20,15 @@ export const RESUME = {
         url: "#",
         icon: Terminal,
       },
-      LinkedIn: {
-        name: "LinkedIn",
-        url: "#",
-        icon: Code2,
-      },
       X: {
         name: "X",
         url: "#",
         icon: Terminal,
+      },
+      WhatsApp: {
+        name: "WhatsApp",
+        url: "https://wa.me/201011388446",
+        icon: Send,
       },
     },
   },
@@ -94,7 +94,7 @@ export const RESUME = {
     },
     {
       title: "E-commerce Platform",
-      techStack: ["Laravel", "MySQL"],
+      techStack: ["Laravel", "MySQL", "Alpine.js", "jQuery"],
       description:
         "Full-stack e-commerce platform with comprehensive product management, order processing, and dynamic promotions. Features full multi-language and RTL support.",
       link: {
