@@ -1,9 +1,10 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Mail, Send } from "lucide-react";
+import { Mail } from "lucide-react";
 import Link from "next/link";
 import { RESUME } from "@/data/resume";
+import { WhatsappIcon } from "@/components/icons/whatsapp-icon";
 
 export function Contact() {
   return (
@@ -35,7 +36,7 @@ export function Contact() {
                  target="_blank"
                  className="inline-flex items-center justify-center px-8 py-4 text-base font-medium rounded-full border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors w-full sm:w-auto"
              >
-                <Send className="w-5 h-5 mr-2" />
+                <WhatsappIcon className="w-5 h-5 mr-2" />
                 Message on WhatsApp
              </Link>
         </div>

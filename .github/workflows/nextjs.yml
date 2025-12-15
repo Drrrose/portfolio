@@ -75,6 +75,14 @@ jobs:
         run: ${{ steps.detect-package-manager.outputs.manager }} ${{ steps.detect-package-manager.outputs.command }}
       - name: Build with Next.js
         run: ${{ steps.detect-package-manager.outputs.runner }} next build
+      - name: Prepare static export for GitHub Pages
+        run: |
+          mkdir out
+          cp -R .next/static out/_next
+          cp .next/server/app/index.html out/index.html
+          cp .next/server/pages/404.html out/404.html
+          # If other pages are prerendered and needed, add them here.
+          # Example: cp .next/server/app/your-page/index.html out/your-page/index.html
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
