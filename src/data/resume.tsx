@@ -1,4 +1,12 @@
-import { Code2, Database, Layout, Server, Settings, Terminal, Send } from "lucide-react";
+import {
+  Code2,
+  Database,
+  Layout,
+  Server,
+  Settings,
+  Terminal,
+  Send,
+} from "lucide-react";
 
 export const RESUME = {
   name: "Mostafa Ali",
@@ -44,7 +52,7 @@ export const RESUME = {
   work: [
     {
       company: "Remah Digital",
-      link: "#",
+      link: "https://remah.tech/",
       badges: [],
       title: "Backend Developer",
       logo: "",
@@ -55,7 +63,7 @@ export const RESUME = {
     },
     {
       company: "Active4Web",
-      link: "#",
+      link: "https://www.active4web.com/checkout/",
       badges: ["Intern"],
       title: "Backend Intern",
       logo: "",
@@ -88,8 +96,8 @@ export const RESUME = {
       description:
         "A secure, multi-lingual, and modular CMS for medical clinics focusing on HIPAA compliance. Features encrypted media storage and secure patient data controls.",
       link: {
-        label: "Private Project",
-        href: "#",
+        label: "nephrocaremd.org",
+        href: "https://nephrocaremd.org/",
       },
     },
     {
@@ -98,8 +106,8 @@ export const RESUME = {
       description:
         "Full-stack e-commerce platform with comprehensive product management, order processing, and dynamic promotions. Features full multi-language and RTL support.",
       link: {
-        label: "Private Project",
-        href: "#",
+        label: "unipartykw.com",
+        href: "https://unipartykw.com/",
       },
     },
     {
@@ -108,8 +116,8 @@ export const RESUME = {
       description:
         "Platform to manage translation workflows, including order creation, dynamic pricing, payment processing, and translator assignment.",
       link: {
-        label: "Private Project",
-        href: "#",
+        label: "wafabridge.com",
+        href: "https://wafabridge.com/",
       },
     },
   ],
