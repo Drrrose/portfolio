@@ -8,36 +8,40 @@ import { WhatsappIcon } from "@/components/icons/whatsapp-icon";
 
 export function Contact() {
   return (
-    <section id="contact" className="py-20 w-full max-w-3xl mx-auto px-4 text-center">
+    <section id="contact" className="py-32 w-full max-w-4xl mx-auto px-4 text-center">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         whileInView={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
         viewport={{ once: true }}
-        className="space-y-6 bg-card border border-border rounded-3xl p-8 sm:p-12 shadow-sm"
+        className="relative space-y-8 bg-white/5 border border-white/10 backdrop-blur-xl rounded-[2.5rem] p-10 sm:p-20 shadow-2xl overflow-hidden"
       >
-        <div className="space-y-2">
-            <h2 className="text-3xl font-bold tracking-tight">Get in Touch</h2>
-            <p className="text-muted-foreground text-lg">
-                Interested in working together? Feel free to reach out for collaborations or just a friendly hello.
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/10 pointer-events-none" />
+        
+        <div className="relative space-y-4">
+            <h2 className="text-4xl sm:text-5xl font-black tracking-tighter text-foreground">
+              Let&apos;s Build Something <span className="text-primary italic">Epic</span>
+            </h2>
+            <p className="text-muted-foreground/80 text-xl max-w-xl mx-auto font-medium">
+                Whether you have a project in mind or just want to say hi, my inbox is always open.
             </p>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+        <div className="relative flex flex-col sm:flex-row items-center justify-center gap-6 pt-6">
              <Link
                 href={`mailto:${RESUME.contact.email}`}
-                className="inline-flex items-center justify-center px-8 py-4 text-base font-medium rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors w-full sm:w-auto"
+                className="group relative inline-flex items-center justify-center px-10 py-5 text-lg font-bold rounded-full bg-primary text-primary-foreground hover:shadow-[0_0_30px_-10px_hsl(var(--primary))] transition-all duration-300 w-full sm:w-auto overflow-hidden"
              >
-                <Mail className="w-5 h-5 mr-2" />
+                <Mail className="w-5 h-5 mr-3 group-hover:scale-110 transition-transform" />
                 {RESUME.contact.email}
              </Link>
              <Link
                  href={RESUME.contact.social.WhatsApp.url}
                  target="_blank"
-                 className="inline-flex items-center justify-center px-8 py-4 text-base font-medium rounded-full border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors w-full sm:w-auto"
+                 className="group inline-flex items-center justify-center px-10 py-5 text-lg font-bold rounded-full border-2 border-white/10 bg-white/5 backdrop-blur-md hover:border-primary/50 hover:bg-primary/5 transition-all duration-300 w-full sm:w-auto"
              >
-                <WhatsappIcon className="w-5 h-5 mr-2" />
-                Message on WhatsApp
+                <WhatsappIcon className="w-6 h-6 mr-3 group-hover:scale-110 transition-transform" />
+                WhatsApp
              </Link>
         </div>
       </motion.div>
