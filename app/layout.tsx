@@ -1,0 +1,43 @@
+import type { Metadata } from "next";
+import { Inter, JetBrains_Mono, Space_Grotesk } from "next/font/google";
+import "./globals.css";
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  variable: "--font-space-grotesk",
+  display: "swap",
+});
+
+const jetBrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-jetbrains-mono",
+  display: "swap",
+});
+
+export const metadata: Metadata = {
+  title: "Mostafa Ali | Backend Developer",
+  description:
+    "Portfolio of Mostafa Ali, a Laravel backend developer focused on scalable products, API integrations, and production systems.",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="en">
+      <body
+        className={`${inter.variable} ${spaceGrotesk.variable} ${jetBrainsMono.variable} antialiased`}
+      >
+        {children}
+      </body>
+    </html>
+  );
+}
