@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useInView, useReducedMotion, useScroll, useSpring, useTransform } from "framer-motion";
+import { motion, useInView, useMotionValue, useReducedMotion, useScroll, useSpring, useTransform } from "framer-motion";
 import type { MotionValue, Variants } from "framer-motion";
 import { SVGProps, useEffect, useMemo, useRef, useState } from "react";
 
@@ -278,8 +278,30 @@ export default function Home() {
   const graphDrift = useTransform(scrollY, [0, BASE_UNIT * 100], [0, BASE_UNIT * 30]);
   const progressScale = useSpring(scrollYProgress, EASING.spring);
 
+  const mouseX = useMotionValue(-999);
+  const mouseY = useMotionValue(-999);
+  const spotlightBg = useTransform([mouseX, mouseY], ([x, y]) =>
+    `radial-gradient(600px at ${x}px ${y}px, rgba(79,126,255,0.1), transparent 80%)`
+  );
+
+  useEffect(() => {
+    if (prefersReduced) return;
+    const onMove = (e: MouseEvent) => {
+      mouseX.set(e.clientX);
+      mouseY.set(e.clientY);
+    };
+    window.addEventListener("mousemove", onMove);
+    return () => window.removeEventListener("mousemove", onMove);
+  }, [prefersReduced, mouseX, mouseY]);
+
   return (
     <main className="relative overflow-hidden bg-bg text-text-primary">
+      {!prefersReduced && (
+        <motion.div
+          className="pointer-events-none fixed inset-0 z-0"
+          style={{ background: spotlightBg }}
+        />
+      )}
       <LeftRail progressScale={progressScale} />
       <HeroSection graphY={prefersReduced ? 0 : graphDrift} prefersReduced={Boolean(prefersReduced)} />
       <ExperienceSection prefersReduced={Boolean(prefersReduced)} />
@@ -901,7 +923,6 @@ function HeroCircuitGraph({ prefersReduced }: { prefersReduced: boolean }) {
         width: "100%",
         height: "100%",
         cursor: "crosshair",
-        background: "#080A0F",
         borderRadius: "12px",
       }}
     />
@@ -1057,6 +1078,88 @@ function StackSection({ prefersReduced }: { prefersReduced: boolean }) {
   );
 }
 
+function ProjectCard({ project, prefersReduced }: {
+  project: typeof projects[0];
+  prefersReduced: boolean;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const rotateX = useMotionValue(0);
+  const rotateY = useMotionValue(0);
+  const springX = useSpring(rotateX, { stiffness: 250, damping: 25 });
+  const springY = useSpring(rotateY, { stiffness: 250, damping: 25 });
+  const [hovered, setHovered] = useState(false);
+
+  function onMove(e: React.MouseEvent) {
+    const el = ref.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const posX = (e.clientX - rect.left) / rect.width;
+    const posY = (e.clientY - rect.top) / rect.height;
+    rotateY.set((posX - 0.5) * 12);
+    rotateX.set((0.5 - posY) * 12);
+  }
+
+  function onLeave() {
+    rotateX.set(0);
+    rotateY.set(0);
+    setHovered(false);
+  }
+
+  return (
+    <motion.div
+      ref={ref}
+      onMouseMove={prefersReduced ? undefined : onMove}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={prefersReduced ? undefined : onLeave}
+      className="relative overflow-hidden rounded-card border border-border bg-surface p-6 md:p-8"
+      style={{
+        rotateX: prefersReduced ? 0 : springX,
+        rotateY: prefersReduced ? 0 : springY,
+        transformPerspective: 800,
+        y: hovered ? -4 : 0,
+        boxShadow: hovered
+          ? "0 16px 40px rgba(0, 0, 0, 0.32)"
+          : "0 0 0 rgba(0, 0, 0, 0)",
+        transition: "y 0.4s cubic-bezier(0.16,1,0.3,1), box-shadow 0.4s cubic-bezier(0.16,1,0.3,1)",
+      }}
+    >
+      <div
+        aria-hidden="true"
+        className="absolute left-0 top-0 h-full w-px bg-accent"
+        style={{
+          transform: hovered ? "scaleY(1)" : "scaleY(0)",
+          transformOrigin: "top",
+          transition: "transform 0.4s cubic-bezier(0.16,1,0.3,1)",
+        }}
+      />
+      <h3 className="font-display text-2xl font-bold tracking-normal text-text-primary">
+        {project.name}
+      </h3>
+      <div className="mt-5 flex flex-wrap gap-2">
+        {project.tech.map((tech) => (
+          <span
+            key={tech}
+            className="rounded-card border border-border px-2.5 py-1.5 font-mono text-[11px] text-text-muted"
+          >
+            {tech}
+          </span>
+        ))}
+      </div>
+      <p className="mt-6 text-base leading-7 text-text-muted">{project.description}</p>
+      {project.url ? (
+        <a
+          href={project.url}
+          className="mt-8 inline-flex font-mono text-sm text-accent transition-colors duration-300 [transition-timing-function:var(--ease-reveal)] hover:text-text-primary"
+        >
+          View System &rarr;
+        </a>
+      ) : (
+        <p className="mt-8 font-mono text-sm text-text-dim">Private Build</p>
+      )}
+    </motion.div>
+  );
+}
+
 function ProjectsSection({ prefersReduced }: { prefersReduced: boolean }) {
   return (
     <MotionSection
@@ -1072,43 +1175,7 @@ function ProjectsSection({ prefersReduced }: { prefersReduced: boolean }) {
 
       <motion.div variants={CHILD_VARIANTS} className="mt-16 grid gap-5 lg:grid-cols-2">
         {projects.map((project) => (
-          <motion.article
-            key={project.name}
-            className="relative overflow-hidden rounded-card border border-border bg-surface p-6 md:p-8"
-            variants={PROJECT_CARD_VARIANTS}
-            initial="rest"
-            whileHover={prefersReduced ? undefined : "hover"}
-          >
-            <motion.div
-              aria-hidden="true"
-              className="absolute left-0 top-0 h-full w-px origin-top bg-accent"
-              variants={PROJECT_ACCENT_VARIANTS}
-            />
-            <h3 className="font-display text-2xl font-bold tracking-normal text-text-primary">
-              {project.name}
-            </h3>
-            <div className="mt-5 flex flex-wrap gap-2">
-              {project.tech.map((tech) => (
-                <span
-                  key={tech}
-                  className="rounded-card border border-border px-2.5 py-1.5 font-mono text-[11px] text-text-muted"
-                >
-                  {tech}
-                </span>
-              ))}
-            </div>
-            <p className="mt-6 text-base leading-7 text-text-muted">{project.description}</p>
-            {project.url ? (
-              <a
-                href={project.url}
-                className="mt-8 inline-flex font-mono text-sm text-accent transition-colors duration-300 [transition-timing-function:var(--ease-reveal)] hover:text-text-primary"
-              >
-                View System &rarr;
-              </a>
-            ) : (
-              <p className="mt-8 font-mono text-sm text-text-dim">Private Build</p>
-            )}
-          </motion.article>
+          <ProjectCard key={project.name} project={project} prefersReduced={prefersReduced} />
         ))}
       </motion.div>
     </MotionSection>
@@ -1181,12 +1248,36 @@ function BackendIcon(props: SVGProps<SVGSVGElement>) {
 }
 
 function DatabaseIcon(props: SVGProps<SVGSVGElement>) {
+  const prefersReduced = useReducedMotion();
   return (
     <svg viewBox={`0 0 ${ICON_SIZE} ${ICON_SIZE}`} fill="none" aria-hidden="true" {...props}>
       <path d="M5 9A7 4 0 0 1 19 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-      <path d="M7 12A5 3 0 0 1 17 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-      <path d="M9 15A3 2 0 0 1 15 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
       <path d="M5 9V16A7 4 0 0 0 19 16V9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      {prefersReduced ? (
+        <>
+          <path d="M7 12A5 3 0 0 1 17 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+          <path d="M9 15A3 2 0 0 1 15 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        </>
+      ) : (
+        <>
+          <motion.path
+            d="M7 12A5 3 0 0 1 17 12"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            animate={{ opacity: [1, 0.2, 1] }}
+            transition={{ duration: 2, ease: "easeInOut", repeat: Infinity }}
+          />
+          <motion.path
+            d="M9 15A3 2 0 0 1 15 15"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            animate={{ opacity: [1, 0.2, 1] }}
+            transition={{ duration: 2, ease: "easeInOut", repeat: Infinity, delay: 0.6 }}
+          />
+        </>
+      )}
     </svg>
   );
 }
@@ -1206,16 +1297,57 @@ function CloudIcon(props: SVGProps<SVGSVGElement>) {
 }
 
 function RealtimeIcon(props: SVGProps<SVGSVGElement>) {
+  const prefersReduced = useReducedMotion();
   return (
     <svg viewBox={`0 0 ${ICON_SIZE} ${ICON_SIZE}`} fill="none" aria-hidden="true" {...props}>
-      <path
-        d="M3 12C5 6 7 6 9 12C11 18 13 18 15 12C17 6 19 6 21 12"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-      <circle cx="9" cy="12" r="1.4" fill="currentColor" />
-      <circle cx="15" cy="12" r="1.4" fill="currentColor" />
+      {prefersReduced ? (
+        <path
+          d="M3 12C5 6 7 6 9 12C11 18 13 18 15 12C17 6 19 6 21 12"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
+      ) : (
+        <motion.path
+          d="M3 12C5 6 7 6 9 12C11 18 13 18 15 12C17 6 19 6 21 12"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          animate={{
+            d: [
+              "M3 12C5 6 7 6 9 12C11 18 13 18 15 12C17 6 19 6 21 12",
+              "M3 12C5 8 7 8 9 12C11 16 13 16 15 12C17 8 19 8 21 12",
+              "M3 12C5 6 7 6 9 12C11 18 13 18 15 12C17 6 19 6 21 12",
+            ],
+          }}
+          transition={{ duration: 1.8, ease: "easeInOut", repeat: Infinity }}
+        />
+      )}
+      {prefersReduced ? (
+        <>
+          <circle cx="9" cy="12" r="1.4" fill="currentColor" />
+          <circle cx="15" cy="12" r="1.4" fill="currentColor" />
+        </>
+      ) : (
+        <>
+          <motion.circle
+            cx="9"
+            cy="12"
+            r="1.4"
+            fill="currentColor"
+            animate={{ r: [1.4, 2.2, 1.4], opacity: [1, 0.3, 1] }}
+            transition={{ duration: 1.6, ease: "easeInOut", repeat: Infinity }}
+          />
+          <motion.circle
+            cx="15"
+            cy="12"
+            r="1.4"
+            fill="currentColor"
+            animate={{ r: [1.4, 2.2, 1.4], opacity: [1, 0.3, 1] }}
+            transition={{ duration: 1.6, ease: "easeInOut", repeat: Infinity, delay: 0.8 }}
+          />
+        </>
+      )}
     </svg>
   );
 }
