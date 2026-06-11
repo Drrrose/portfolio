@@ -38,6 +38,17 @@ const CHILD_VARIANTS: Variants = {
   },
 };
 
+function delayVariants(delay: number): Variants {
+  return {
+    hidden: { opacity: 0, y: BASE_UNIT * 3 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { ...EASING.reveal, delay },
+    },
+  };
+}
+
 const LETTER_VARIANTS: Variants = {
   hidden: { opacity: 0, y: BASE_UNIT * 2 },
   visible: {
@@ -473,7 +484,7 @@ function HeroSection({
         </motion.h1>
         <motion.div
           className="mt-5 flex flex-wrap items-center gap-3 font-mono text-sm text-text-muted"
-          variants={CHILD_VARIANTS}
+          variants={delayVariants(0.1)}
           initial={prefersReduced ? "visible" : "hidden"}
           animate="visible"
         >
@@ -486,7 +497,7 @@ function HeroSection({
         </motion.div>
         <motion.p
           className="mt-7 max-w-2xl text-lg leading-8 text-text-muted md:text-xl"
-          variants={CHILD_VARIANTS}
+          variants={delayVariants(0.2)}
           initial={prefersReduced ? "visible" : "hidden"}
           animate="visible"
         >
@@ -496,7 +507,7 @@ function HeroSection({
         </motion.p>
         <motion.div
           className="mt-7 flex flex-wrap gap-3"
-          variants={CHILD_VARIANTS}
+          variants={delayVariants(0.35)}
           initial={prefersReduced ? "visible" : "hidden"}
           animate="visible"
         >
@@ -508,7 +519,7 @@ function HeroSection({
         </motion.div>
         <motion.div
           className="mt-10 flex flex-wrap gap-4"
-          variants={CHILD_VARIANTS}
+          variants={delayVariants(0.5)}
           initial={prefersReduced ? "visible" : "hidden"}
           animate="visible"
         >
@@ -985,6 +996,9 @@ function SkillBadge({
 }
 
 function ExperienceSection({ prefersReduced }: { prefersReduced: boolean }) {
+  const timelineRef = useRef<HTMLDivElement>(null);
+  const timelineInView = useInView(timelineRef, { once: true, margin: "-80px 0px" });
+
   return (
     <MotionSection
       id="experience"
@@ -998,11 +1012,26 @@ function ExperienceSection({ prefersReduced }: { prefersReduced: boolean }) {
       />
 
       <motion.div variants={CHILD_VARIANTS} className="relative mt-16 pl-7 md:pl-10">
-        <div className="absolute left-1 top-0 h-full w-px bg-border md:left-2" />
-        <div className="space-y-8">
-          {experiences.map((experience) => (
-            <article key={experience.company} className="relative rounded-card border border-border bg-surface p-6 md:p-8">
-              <span className="absolute -left-[34px] top-8 h-3 w-3 rounded-full border border-accent bg-bg md:-left-[39px]" />
+        <motion.div
+          className="absolute left-1 top-0 h-full w-px origin-top bg-border md:left-2"
+          style={prefersReduced ? undefined : { scaleY: timelineInView ? 1 : 0 }}
+          transition={{ duration: 1, ease: "easeInOut" }}
+        />
+        <div ref={timelineRef} className="space-y-8">
+          {experiences.map((experience, i) => (
+            <motion.article
+              key={experience.company}
+              className="relative rounded-card border border-border bg-surface p-6 md:p-8"
+              initial={prefersReduced ? false : { opacity: 0, x: -20 }}
+              animate={prefersReduced ? {} : timelineInView ? { opacity: 1, x: 0 } : {}}
+              transition={{ ...EASING.reveal, delay: i * 0.12 }}
+            >
+              <motion.span
+                className="absolute -left-[34px] top-8 h-3 w-3 rounded-full border border-accent bg-bg md:-left-[39px]"
+                initial={prefersReduced ? false : { scale: 0 }}
+                animate={prefersReduced ? {} : timelineInView ? { scale: 1 } : {}}
+                transition={{ ...EASING.snap, delay: 0.2 + i * 0.12 }}
+              />
               <h3 className="font-display text-2xl font-bold tracking-normal text-text-primary md:text-3xl">
                 {experience.url ? (
                   <a
@@ -1021,12 +1050,22 @@ function ExperienceSection({ prefersReduced }: { prefersReduced: boolean }) {
               <p className="mt-5 max-w-4xl text-base leading-7 text-text-muted">
                 {experience.description}
               </p>
-            </article>
+            </motion.article>
           ))}
         </div>
 
-        <article className="relative mt-8 rounded-card border border-border bg-transparent p-6 md:p-8">
-          <span className="absolute -left-[34px] top-8 h-3 w-3 rounded-full border border-text-dim bg-bg md:-left-[39px]" />
+        <motion.article
+          className="relative mt-8 rounded-card border border-border bg-transparent p-6 md:p-8"
+          initial={prefersReduced ? false : { opacity: 0, x: -20 }}
+          animate={prefersReduced ? {} : timelineInView ? { opacity: 1, x: 0 } : {}}
+          transition={{ ...EASING.reveal, delay: experiences.length * 0.12 }}
+        >
+          <motion.span
+            className="absolute -left-[34px] top-8 h-3 w-3 rounded-full border border-text-dim bg-bg md:-left-[39px]"
+            initial={prefersReduced ? false : { scale: 0 }}
+            animate={prefersReduced ? {} : timelineInView ? { scale: 1 } : {}}
+            transition={{ ...EASING.snap, delay: 0.2 + experiences.length * 0.12 }}
+          />
           <p className="font-mono text-xs uppercase leading-none text-text-dim">Education</p>
           <h3 className="mt-4 font-display text-2xl font-bold tracking-normal text-text-primary">
             Shorouk Academy
@@ -1035,7 +1074,7 @@ function ExperienceSection({ prefersReduced }: { prefersReduced: boolean }) {
             Computer Science &middot; 2021 - 2025
           </p>
           <p className="mt-4 text-base leading-7 text-text-muted">Very Good (Project: Excellent)</p>
-        </article>
+        </motion.article>
       </motion.div>
     </MotionSection>
   );
@@ -1060,7 +1099,16 @@ function StackSection({ prefersReduced }: { prefersReduced: boolean }) {
       >
         {stackGroups.map(({ name, skills, Icon }) => (
           <article key={name} className="rounded-card border border-border bg-surface p-5">
-            <Icon className="h-6 w-6 text-accent" />
+            <div className="relative inline-flex">
+              {!prefersReduced && (
+                <motion.div
+                  className="absolute -inset-3 rounded-full bg-accent/5 blur-lg"
+                  animate={{ scale: [1, 1.3, 1], opacity: [0.15, 0.4, 0.15] }}
+                  transition={{ duration: 3, ease: "easeInOut", repeat: Infinity }}
+                />
+              )}
+              <Icon className="relative h-6 w-6 text-accent" />
+            </div>
             <h3 className="mt-6 font-display text-xl font-bold leading-tight tracking-normal text-text-primary">
               {name}
             </h3>
@@ -1151,7 +1199,13 @@ function ProjectCard({ project, prefersReduced }: {
           href={project.url}
           className="mt-8 inline-flex font-mono text-sm text-accent transition-colors duration-300 [transition-timing-function:var(--ease-reveal)] hover:text-text-primary"
         >
-          View System &rarr;
+          View System{" "}
+          <motion.span
+            animate={{ x: hovered ? 4 : 0 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+          >
+            &rarr;
+          </motion.span>
         </a>
       ) : (
         <p className="mt-8 font-mono text-sm text-text-dim">Private Build</p>
