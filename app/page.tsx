@@ -1140,11 +1140,12 @@ function ProjectCard({ project, prefersReduced }: {
 
   return (
     <motion.div
+      className="h-full"
       onHoverStart={() => setHovered(true)}
       onHoverEnd={() => setHovered(false)}
     >
       <motion.div
-        className="overflow-hidden rounded-card border border-border bg-surface p-6 md:p-8"
+        className="flex h-full flex-col overflow-hidden rounded-card border border-border bg-surface p-6 md:p-8"
         animate={prefersReduced ? false : {
           y: hovered ? -4 : 0,
           boxShadow: hovered
@@ -1192,7 +1193,7 @@ function ProjectCard({ project, prefersReduced }: {
           href={project.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-8 inline-flex font-mono text-sm text-accent transition-colors duration-300 [transition-timing-function:var(--ease-reveal)] hover:text-text-primary"
+          className="mt-auto inline-flex font-mono text-sm text-accent transition-colors duration-300 [transition-timing-function:var(--ease-reveal)] hover:text-text-primary"
         >
           View System{" "}
           <motion.span
@@ -1203,7 +1204,7 @@ function ProjectCard({ project, prefersReduced }: {
           </motion.span>
         </a>
       ) : (
-        <p className="mt-8 font-mono text-sm text-text-dim">Private Build</p>
+        <p className="mt-auto font-mono text-sm text-text-dim">Private Build</p>
       )}
       </motion.div>
     </motion.div>
