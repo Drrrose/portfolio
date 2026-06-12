@@ -1140,26 +1140,27 @@ function ProjectCard({ project, prefersReduced }: {
 
   return (
     <motion.div
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={prefersReduced ? undefined : () => setHovered(false)}
-      className="relative overflow-hidden rounded-card border border-border bg-surface p-6 md:p-8"
-      style={{
-        y: hovered ? -4 : 0,
-        boxShadow: hovered
-          ? "0 16px 40px rgba(0, 0, 0, 0.32)"
-          : "0 4px 12px rgba(0, 0, 0, 0.1)",
-        transition: "y 0.4s cubic-bezier(0.16,1,0.3,1), box-shadow 0.4s cubic-bezier(0.16,1,0.3,1)",
-      }}
+      onHoverStart={() => setHovered(true)}
+      onHoverEnd={() => setHovered(false)}
     >
-      <div
-        aria-hidden="true"
-        className="absolute left-0 top-0 h-full w-px bg-accent"
-        style={{
-          transform: hovered ? "scaleY(1)" : "scaleY(0)",
-          transformOrigin: "top",
-          transition: "transform 0.4s cubic-bezier(0.16,1,0.3,1)",
+      <motion.div
+        className="overflow-hidden rounded-card border border-border bg-surface p-6 md:p-8"
+        animate={prefersReduced ? false : {
+          y: hovered ? -4 : 0,
+          boxShadow: hovered
+            ? "0 16px 40px rgba(0, 0, 0, 0.32)"
+            : "0 4px 12px rgba(0, 0, 0, 0.1)",
         }}
-      />
+        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+      >
+        <div
+          aria-hidden="true"
+          className="absolute left-0 top-0 h-full w-px origin-top bg-accent"
+          style={{
+            transform: hovered ? "scaleY(1)" : "scaleY(0)",
+            transition: "transform 0.4s cubic-bezier(0.16,1,0.3,1)",
+          }}
+        />
       <div className="flex flex-wrap items-center gap-3">
         <h3 className="font-display text-2xl font-bold tracking-normal text-text-primary">
           {project.name}
@@ -1204,6 +1205,7 @@ function ProjectCard({ project, prefersReduced }: {
       ) : (
         <p className="mt-8 font-mono text-sm text-text-dim">Private Build</p>
       )}
+      </motion.div>
     </motion.div>
   );
 }
