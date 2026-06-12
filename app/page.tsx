@@ -214,6 +214,7 @@ const projects = [
   {
     name: "Primotel Booking Platform",
     tech: ["Laravel", "eZee", "Agoda", "WhatsApp Chatbot"],
+    badge: "1000+ bookings",
     description:
       "Hotel booking platform with live property availability, eZee and Agoda integrations, and a WhatsApp chatbot that helps guests reserve rooms and automate support flows.",
     url: "https://www.primotel.com/",
@@ -221,6 +222,7 @@ const projects = [
   {
     name: "MU7AGABA Muslim Marriage App",
     tech: ["Laravel", "Firebase", "Push Notifications", "Messaging"],
+    badge: "10k+ downloads",
     description:
       "Secure Muslim marriage backend powering profile moderation, user matching, direct messaging, and real-time push notifications for the MU7AGABA mobile application.",
     url: "https://play.google.com/store/apps/details?id=com.yamentec.mu7gaba",
@@ -1158,9 +1160,16 @@ function ProjectCard({ project, prefersReduced }: {
           transition: "transform 0.4s cubic-bezier(0.16,1,0.3,1)",
         }}
       />
-      <h3 className="font-display text-2xl font-bold tracking-normal text-text-primary">
-        {project.name}
-      </h3>
+      <div className="flex flex-wrap items-center gap-3">
+        <h3 className="font-display text-2xl font-bold tracking-normal text-text-primary">
+          {project.name}
+        </h3>
+        {project.badge && (
+          <span className="rounded-card border border-accent/30 bg-accent/10 px-2.5 py-1 font-mono text-[11px] text-accent">
+            {project.badge}
+          </span>
+        )}
+      </div>
       <div className="mt-5 flex flex-wrap gap-2">
         {project.tech.map((tech, i) => (
           <span
