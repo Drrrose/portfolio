@@ -200,7 +200,7 @@ const stackGroups = [
   },
   {
     name: "Realtime",
-    skills: ["Firebase", "Push Notifications", "Messaging"],
+    skills: ["WebSockets", "Pusher", "Laravel Reverb", "Firebase", "Messaging"],
     Icon: RealtimeIcon,
   },
   {
@@ -956,6 +956,8 @@ function CtaButton({
   return (
     <motion.a
       href={href}
+      target={href.startsWith("#") ? undefined : "_blank"}
+      rel={href.startsWith("#") ? undefined : "noopener noreferrer"}
       className={`group relative inline-flex min-h-12 items-center overflow-hidden rounded-card border px-6 font-mono text-sm ${
         isPrimary
           ? "border-accent bg-accent text-text-primary"
@@ -1036,6 +1038,8 @@ function ExperienceSection({ prefersReduced }: { prefersReduced: boolean }) {
                 {experience.url ? (
                   <a
                     href={experience.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="underline decoration-text-dim underline-offset-8 transition-colors duration-300 [transition-timing-function:var(--ease-reveal)] hover:text-accent"
                   >
                     {experience.company}
@@ -1130,44 +1134,18 @@ function ProjectCard({ project, prefersReduced }: {
   project: typeof projects[0];
   prefersReduced: boolean;
 }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const rotateX = useMotionValue(0);
-  const rotateY = useMotionValue(0);
-  const springX = useSpring(rotateX, { stiffness: 250, damping: 25 });
-  const springY = useSpring(rotateY, { stiffness: 250, damping: 25 });
   const [hovered, setHovered] = useState(false);
-
-  function onMove(e: React.MouseEvent) {
-    const el = ref.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    const posX = (e.clientX - rect.left) / rect.width;
-    const posY = (e.clientY - rect.top) / rect.height;
-    rotateY.set((posX - 0.5) * 12);
-    rotateX.set((0.5 - posY) * 12);
-  }
-
-  function onLeave() {
-    rotateX.set(0);
-    rotateY.set(0);
-    setHovered(false);
-  }
 
   return (
     <motion.div
-      ref={ref}
-      onMouseMove={prefersReduced ? undefined : onMove}
       onMouseEnter={() => setHovered(true)}
-      onMouseLeave={prefersReduced ? undefined : onLeave}
+      onMouseLeave={prefersReduced ? undefined : () => setHovered(false)}
       className="relative overflow-hidden rounded-card border border-border bg-surface p-6 md:p-8"
       style={{
-        rotateX: prefersReduced ? 0 : springX,
-        rotateY: prefersReduced ? 0 : springY,
-        transformPerspective: 800,
         y: hovered ? -4 : 0,
         boxShadow: hovered
           ? "0 16px 40px rgba(0, 0, 0, 0.32)"
-          : "0 0 0 rgba(0, 0, 0, 0)",
+          : "0 4px 12px rgba(0, 0, 0, 0.1)",
         transition: "y 0.4s cubic-bezier(0.16,1,0.3,1), box-shadow 0.4s cubic-bezier(0.16,1,0.3,1)",
       }}
     >
@@ -1184,10 +1162,15 @@ function ProjectCard({ project, prefersReduced }: {
         {project.name}
       </h3>
       <div className="mt-5 flex flex-wrap gap-2">
-        {project.tech.map((tech) => (
+        {project.tech.map((tech, i) => (
           <span
             key={tech}
-            className="rounded-card border border-border px-2.5 py-1.5 font-mono text-[11px] text-text-muted"
+            className="rounded-card border px-2.5 py-1.5 font-mono text-[11px] text-text-muted transition-colors duration-300"
+            style={{
+              borderColor: hovered ? "rgba(79,126,255,0.25)" : "#1C2030",
+              color: hovered ? "#F0F4FF" : "#6B7799",
+              transitionDelay: hovered ? `${i * 30}ms` : "0ms",
+            }}
           >
             {tech}
           </span>
@@ -1197,6 +1180,8 @@ function ProjectCard({ project, prefersReduced }: {
       {project.url ? (
         <a
           href={project.url}
+          target="_blank"
+          rel="noopener noreferrer"
           className="mt-8 inline-flex font-mono text-sm text-accent transition-colors duration-300 [transition-timing-function:var(--ease-reveal)] hover:text-text-primary"
         >
           View System{" "}
@@ -1259,6 +1244,8 @@ function ContactSection({ prefersReduced }: { prefersReduced: boolean }) {
           <motion.a
             key={label}
             href={href}
+            target={href.startsWith("mailto:") ? undefined : "_blank"}
+            rel={href.startsWith("mailto:") ? undefined : "noopener noreferrer"}
             className="flex items-center gap-4 rounded-card border border-border bg-surface p-4 md:p-5"
             variants={CONTACT_LINK_VARIANTS}
             initial="rest"
@@ -1289,14 +1276,34 @@ function Footer() {
 }
 
 function BackendIcon(props: SVGProps<SVGSVGElement>) {
+  const prefersReduced = useReducedMotion();
   return (
     <svg viewBox={`0 0 ${ICON_SIZE} ${ICON_SIZE}`} fill="none" aria-hidden="true" {...props}>
       <path d="M4 6H20" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
       <path d="M6 12H18" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
       <path d="M3 18H21" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-      <circle cx="4" cy="6" r="1.4" fill="currentColor" />
-      <circle cx="18" cy="12" r="1.4" fill="currentColor" />
-      <circle cx="8" cy="18" r="1.4" fill="currentColor" />
+      {prefersReduced ? (
+        <>
+          <circle cx="4" cy="6" r="1.4" fill="currentColor" />
+          <circle cx="18" cy="12" r="1.4" fill="currentColor" />
+          <circle cx="8" cy="18" r="1.4" fill="currentColor" />
+        </>
+      ) : (
+        <>
+          <motion.circle cx="4" cy="6" r="1.4" fill="currentColor"
+            animate={{ opacity: [1, 0.15, 1] }}
+            transition={{ duration: 1.5, ease: "easeInOut", repeat: Infinity }}
+          />
+          <motion.circle cx="18" cy="12" r="1.4" fill="currentColor"
+            animate={{ opacity: [1, 0.15, 1] }}
+            transition={{ duration: 1.5, ease: "easeInOut", repeat: Infinity, delay: 0.5 }}
+          />
+          <motion.circle cx="8" cy="18" r="1.4" fill="currentColor"
+            animate={{ opacity: [1, 0.15, 1] }}
+            transition={{ duration: 1.5, ease: "easeInOut", repeat: Infinity, delay: 1 }}
+          />
+        </>
+      )}
     </svg>
   );
 }
@@ -1337,67 +1344,81 @@ function DatabaseIcon(props: SVGProps<SVGSVGElement>) {
 }
 
 function CloudIcon(props: SVGProps<SVGSVGElement>) {
+  const prefersReduced = useReducedMotion();
   return (
     <svg viewBox={`0 0 ${ICON_SIZE} ${ICON_SIZE}`} fill="none" aria-hidden="true" {...props}>
-      <path
-        d="M6.4 17.2C4.5 17.2 3 15.8 3 13.9C3 12.1 4.4 10.7 6.2 10.6C6.9 8.3 9 6.8 11.5 6.8C14 6.8 16.1 8.4 16.8 10.7H17.4C19.4 10.7 21 12.1 21 14C21 15.9 19.5 17.2 17.5 17.2H6.4Z"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+      {prefersReduced ? (
+        <path
+          d="M6.4 17.2C4.5 17.2 3 15.8 3 13.9C3 12.1 4.4 10.7 6.2 10.6C6.9 8.3 9 6.8 11.5 6.8C14 6.8 16.1 8.4 16.8 10.7H17.4C19.4 10.7 21 12.1 21 14C21 15.9 19.5 17.2 17.5 17.2H6.4Z"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      ) : (
+        <motion.g
+          animate={{ y: [0, -2, 0] }}
+          transition={{ duration: 3, ease: "easeInOut", repeat: Infinity }}
+        >
+          <path
+            d="M6.4 17.2C4.5 17.2 3 15.8 3 13.9C3 12.1 4.4 10.7 6.2 10.6C6.9 8.3 9 6.8 11.5 6.8C14 6.8 16.1 8.4 16.8 10.7H17.4C19.4 10.7 21 12.1 21 14C21 15.9 19.5 17.2 17.5 17.2H6.4Z"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </motion.g>
+      )}
     </svg>
   );
 }
 
 function RealtimeIcon(props: SVGProps<SVGSVGElement>) {
   const prefersReduced = useReducedMotion();
+  const wave = "M3 12C5 6 7 6 9 12C11 18 13 18 15 12C17 6 19 6 21 12";
+  const flat = "M3 12C5 8 7 8 9 12C11 16 13 16 15 12C17 8 19 8 21 12";
+  const echo = "M3 12C5 4 7 4 9 12C11 20 13 20 15 12C17 4 19 4 21 12";
   return (
     <svg viewBox={`0 0 ${ICON_SIZE} ${ICON_SIZE}`} fill="none" aria-hidden="true" {...props}>
       {prefersReduced ? (
-        <path
-          d="M3 12C5 6 7 6 9 12C11 18 13 18 15 12C17 6 19 6 21 12"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-        />
-      ) : (
-        <motion.path
-          d="M3 12C5 6 7 6 9 12C11 18 13 18 15 12C17 6 19 6 21 12"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          animate={{
-            d: [
-              "M3 12C5 6 7 6 9 12C11 18 13 18 15 12C17 6 19 6 21 12",
-              "M3 12C5 8 7 8 9 12C11 16 13 16 15 12C17 8 19 8 21 12",
-              "M3 12C5 6 7 6 9 12C11 18 13 18 15 12C17 6 19 6 21 12",
-            ],
-          }}
-          transition={{ duration: 1.8, ease: "easeInOut", repeat: Infinity }}
-        />
-      )}
-      {prefersReduced ? (
         <>
+          <path d={wave} stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
           <circle cx="9" cy="12" r="1.4" fill="currentColor" />
           <circle cx="15" cy="12" r="1.4" fill="currentColor" />
         </>
       ) : (
         <>
+          {/* Echo / reverb trailing wave */}
+          <motion.path
+            d={echo}
+            stroke="currentColor"
+            strokeWidth="1"
+            strokeLinecap="round"
+            opacity={0.2}
+            animate={{ d: [echo, flat, echo], opacity: [0.2, 0.08, 0.2] }}
+            transition={{ duration: 1.8, ease: "easeInOut", repeat: Infinity, delay: 0.35 }}
+          />
+          {/* Main wave */}
+          <motion.path
+            d={wave}
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            animate={{ d: [wave, flat, wave] }}
+            transition={{ duration: 1.8, ease: "easeInOut", repeat: Infinity }}
+          />
+          {/* Client endpoint */}
           <motion.circle
-            cx="9"
-            cy="12"
-            r="1.4"
+            cx="9" cy="12" r="1.4"
             fill="currentColor"
-            animate={{ r: [1.4, 2.2, 1.4], opacity: [1, 0.3, 1] }}
+            animate={{ r: [1.4, 2.4, 1.4], opacity: [1, 0.25, 1] }}
             transition={{ duration: 1.6, ease: "easeInOut", repeat: Infinity }}
           />
+          {/* Server endpoint */}
           <motion.circle
-            cx="15"
-            cy="12"
-            r="1.4"
+            cx="15" cy="12" r="1.4"
             fill="currentColor"
-            animate={{ r: [1.4, 2.2, 1.4], opacity: [1, 0.3, 1] }}
+            animate={{ r: [1.4, 2.4, 1.4], opacity: [1, 0.25, 1] }}
             transition={{ duration: 1.6, ease: "easeInOut", repeat: Infinity, delay: 0.8 }}
           />
         </>
@@ -1407,12 +1428,44 @@ function RealtimeIcon(props: SVGProps<SVGSVGElement>) {
 }
 
 function FrontendIcon(props: SVGProps<SVGSVGElement>) {
+  const prefersReduced = useReducedMotion();
   return (
     <svg viewBox={`0 0 ${ICON_SIZE} ${ICON_SIZE}`} fill="none" aria-hidden="true" {...props}>
-      <rect x="4" y="5" width="13" height="10" stroke="currentColor" strokeWidth="1.5" />
-      <rect x="7" y="9" width="13" height="10" stroke="currentColor" strokeWidth="1.5" />
-      <path d="M7 9L4 5" stroke="currentColor" strokeWidth="1.5" />
-      <path d="M17 15L20 19" stroke="currentColor" strokeWidth="1.5" />
+      {prefersReduced ? (
+        <>
+          <rect x="4" y="5" width="13" height="10" stroke="currentColor" strokeWidth="1.5" />
+          <rect x="7" y="9" width="13" height="10" stroke="currentColor" strokeWidth="1.5" />
+          <path d="M7 9L4 5" stroke="currentColor" strokeWidth="1.5" />
+          <path d="M17 15L20 19" stroke="currentColor" strokeWidth="1.5" />
+        </>
+      ) : (
+        <>
+          <motion.rect
+            x="4" y="5" width="13" height="10"
+            stroke="currentColor" strokeWidth="1.5"
+            animate={{ x: [0, 1, 0] }}
+            transition={{ duration: 2.5, ease: "easeInOut", repeat: Infinity }}
+          />
+          <motion.rect
+            x="7" y="9" width="13" height="10"
+            stroke="currentColor" strokeWidth="1.5"
+            animate={{ x: [0, -1, 0] }}
+            transition={{ duration: 2.5, ease: "easeInOut", repeat: Infinity }}
+          />
+          <motion.path
+            d="M7 9L4 5"
+            stroke="currentColor" strokeWidth="1.5"
+            animate={{ opacity: [1, 0.25, 1] }}
+            transition={{ duration: 2.5, ease: "easeInOut", repeat: Infinity }}
+          />
+          <motion.path
+            d="M17 15L20 19"
+            stroke="currentColor" strokeWidth="1.5"
+            animate={{ opacity: [1, 0.25, 1] }}
+            transition={{ duration: 2.5, ease: "easeInOut", repeat: Infinity, delay: 1.25 }}
+          />
+        </>
+      )}
     </svg>
   );
 }
