@@ -163,6 +163,7 @@ const experiences = [
     period: "12/2025 - Present",
     description:
       "Architected Laravel backends for hospitality, Muslim marriage, and ride-hailing products. Delivered Agoda and eZee booking integrations, a WhatsApp chatbot, real-time notifications with Firebase, and scalable role-based systems.",
+    url: "https://dotlaa.com/",
   },
   {
     company: "Remah Digital",
