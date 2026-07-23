@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Circuit Graph — System Topology</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body { 
+    background: #05070A; 
+    display: flex; 
+    flex-direction: column;
+    justify-content: center; 
+    align-items: center; 
+    min-height: 100vh; 
+    font-family: 'Inter', sans-serif;
+    overflow: hidden;
+    color: #8B9BB4;
+  }
+
+  .ui-layer {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    padding: 20px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  .ui-left h1 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 600;
+    color: #C8D4E8;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .ui-left .subtitle {
+    font-size: 11px;
+    color: #5A6A85;
+    letter-spacing: 0.05em;
+  }
+
+  .ui-right {
+    display: flex;
+    gap: 16px;
+    pointer-events: auto;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: #5A6A85;
+    letter-spacing: 0.05em;
+  }
+
+  .legend-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+  }
+
+  .legend-dot.gateway { background: #4F7EFF; box-shadow: 0 0 6px rgba(79,126,255,0.5); }
+  .legend-dot.service { background: #6B7799; }
+  .legend-dot.warm { background: #FF6B35; box-shadow: 0 0 6px rgba(255,107,53,0.5); }
+
+  .stats-bar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 16px 32px;
+    display: flex;
+    gap: 40px;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  .stat {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .stat-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18px;
+    font-weight: 600;
+    color: #C8D4E8;
+  }
+
+  .stat-label {
+    font-size: 10px;
+    color: #5A6A85;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .wrap { 
+    position: relative; 
+    width: 620px; 
+    height: 600px; 
+    opacity: 0.6; 
+    transition: opacity 0.6s ease;
+  }
+
+  @media (min-width: 768px) { 
+    .wrap { width: 720px; height: 520px; } 
+  }
+
+  @media (min-width: 1024px) { 
+    .wrap { width: 860px; height: 640px; opacity: 1; } 
+  }
+
+  canvas { 
+    display: block; 
+    width: 100%; 
+    height: 100%; 
+    cursor: crosshair; 
+    border-radius: 16px; 
+  }
+
+  .glow-bg {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%; height: 80%;
+    background: radial-gradient(ellipse at center, rgba(79,126,255,0.03) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: -1;
+  }
+</style>
+<base target="_blank">
+</head>
+<body>
+<div class="ui-layer">
+  <div class="ui-left">
+    <h1>System Topology</h1>
+    <div class="subtitle">Real-time service dependency graph</div>
+  </div>
+  <div class="ui-right">
+    <div class="legend-item"><div class="legend-dot gateway"></div> Gateway</div>
+    <div class="legend-item"><div class="legend-dot service"></div> Service</div>
+    <div class="legend-item"><div class="legend-dot warm"></div> Hot Path</div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="glow-bg"></div>
+  <canvas id="c" aria-hidden="true"></canvas>
+</div>
+
+<div class="stats-bar">
+  <div class="stat"><div class="stat-value" id="stat-nodes">15</div><div class="stat-label">Services</div></div>
+  <div class="stat"><div class="stat-value" id="stat-edges">17</div><div class="stat-label">Connections</div></div>
+  <div class="stat"><div class="stat-value" id="stat-active">10</div><div class="stat-label">Active Paths</div></div>
+  <div class="stat"><div class="stat-value" id="stat-throughput">2.4k</div><div class="stat-label">Req/s</div></div>
+</div>
+
+<script>
+(() => {
+  const canvas = document.getElementById("c");
+  const ctx = canvas.getContext("2d");
+  const dpr = Math.min(devicePixelRatio || 1, 2);
+  const W = 860;
+  const H = 640;
+
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  ctx.scale(dpr, dpr);
+
+  const ACCENT  = "#4F7EFF";
+  const WARM    = "#FF6B35";
+  const DIM     = "rgba(45,52,85,0.5)";
+  const BG      = "#05070A";
+  const SURF    = "#0B0E14";
+  const SURF2   = "#111621";
+  const BORDER  = "#1C2030";
+  const BORDER2 = "#2A3050";
+  const MUTED   = "#6B7799";
+  const MUTED2  = "#4A5570";
+  const TEXT    = "#C8D4E8";
+  const GLOW    = "rgba(79,126,255,0.15)";
+
+  const nodes = [
+    { id: "ingress",  x: 110, y: 100, r: 10, label: "INGRESS",  warm: false, gateway: true,  layer: 0 },
+    { id: "auth",     x: 260, y: 80,  r: 7,  label: "AUTH",     warm: false, gateway: false, layer: 0 },
+    { id: "api",      x: 400, y: 100, r: 11, label: "API",      warm: true,  gateway: true,  layer: 0 },
+    { id: "queue",    x: 540, y: 80,  r: 7,  label: "QUEUE",    warm: false, gateway: false, layer: 0 },
+    { id: "booking",  x: 180, y: 220, r: 7,  label: "BOOKING",  warm: false, gateway: false, layer: 1 },
+    { id: "matching", x: 320, y: 230, r: 7,  label: "MATCHING", warm: false, gateway: false, layer: 1 },
+    { id: "dispatch", x: 460, y: 220, r: 7,  label: "DISPATCH", warm: false, gateway: false, layer: 1 },
+    { id: "notify",   x: 600, y: 235, r: 7,  label: "NOTIFY",   warm: false, gateway: false, layer: 1 },
+    { id: "media",    x: 120, y: 360, r: 7,  label: "MEDIA",    warm: false, gateway: false, layer: 2 },
+    { id: "billing",  x: 250, y: 370, r: 7,  label: "BILLING",  warm: false, gateway: false, layer: 2 },
+    { id: "cms",      x: 400, y: 360, r: 7,  label: "CMS",      warm: false, gateway: false, layer: 2 },
+    { id: "reporting",x: 540, y: 370, r: 7,  label: "REPORT",   warm: false, gateway: false, layer: 2 },
+    { id: "storage",  x: 190, y: 500, r: 7,  label: "STORAGE",  warm: false, gateway: false, layer: 3 },
+    { id: "cache",    x: 390, y: 500, r: 7,  label: "CACHE",    warm: false, gateway: false, layer: 3 },
+    { id: "egress",   x: 620, y: 500, r: 10, label: "EGRESS",   warm: false, gateway: true,  layer: 3 },
+  ];
+
+  const nodeMap = {};
+  nodes.forEach((n) => (nodeMap[n.id] = n));
+
+  const edges = [
+    { a: "ingress",  b: "auth",     active: true,  weight: 0.8 },
+    { a: "auth",     b: "api",      active: true,  weight: 1.0 },
+    { a: "api",      b: "queue",    active: false, weight: 0.3 },
+    { a: "ingress",  b: "booking",  active: false, weight: 0.2 },
+    { a: "auth",     b: "matching", active: true,  weight: 0.9 },
+    { a: "api",      b: "dispatch", active: true,  weight: 0.85 },
+    { a: "queue",    b: "notify",   active: true,  weight: 0.7 },
+    { a: "booking",  b: "billing",  active: true,  weight: 0.75 },
+    { a: "matching", b: "cms",      active: false, weight: 0.2 },
+    { a: "dispatch", b: "reporting",active: true,  weight: 0.6 },
+    { a: "notify",   b: "reporting",active: false, weight: 0.15 },
+    { a: "media",    b: "booking",  active: false, weight: 0.1 },
+    { a: "media",    b: "storage",  active: true,  weight: 0.9 },
+    { a: "billing",  b: "cache",    active: false, weight: 0.25 },
+    { a: "cms",      b: "cache",    active: true,  weight: 0.8 },
+    { a: "reporting",b: "egress",   active: true,  weight: 0.5 },
+    { a: "cache",    b: "egress",   active: false, weight: 0.2 },
+  ];
+
+  const activeEdges = edges.filter((e) => e.active);
+  const particles = activeEdges.map((e, i) => ({
+    edge: e,
+    t: (i * 0.17) % 1,
+    speed: 0.003 + (i % 7) * 0.0008,
+    size: 1.5 + e.weight * 2.5,
+    trail: [],
+  }));
+
+  const pulses = nodes.map((n, i) => ({
+    node: n,
+    t: (i * 0.15) % 1,
+    speed: 0.0035 + (i % 5) * 0.0012,
+    rings: 3,
+  }));
+
+  const layerY = [160, 295, 435, 570];
+  const layerLabels = ["Edge Layer", "Core Services", "Data Layer", "Infrastructure"];
+
+  let mouse = { x: -999, y: -999 };
+  let smoothMouse = { x: -999, y: -999 };
+
+  function onMouseMove(e) {
+    const rect = canvas.getBoundingClientRect();
+    const sx = W / rect.width;
+    const sy = H / rect.height;
+    mouse = {
+      x: (e.clientX - rect.left) * sx,
+      y: (e.clientY - rect.top) * sy,
+    };
+  }
+  function onMouseLeave() {
+    mouse = { x: -999, y: -999 };
+  }
+
+  canvas.addEventListener("mousemove", onMouseMove);
+  canvas.addEventListener("mouseleave", onMouseLeave);
+
+  function cpOf(a, b, strength = 0.22) {
+    const mx = (a.x + b.x) / 2;
+    const my = (a.y + b.y) / 2;
+    const dx = b.x - a.x, dy = b.y - a.y;
+    return { cx: mx - dy * strength, cy: my + dx * strength };
+  }
+
+  function bezierPoint(ax, ay, bx, by, cx, cy, t) {
+    const mt = 1 - t;
+    return {
+      x: mt * mt * ax + 2 * mt * t * cx + t * t * bx,
+      y: mt * mt * ay + 2 * mt * t * cy + t * t * by,
+    };
+  }
+
+  function dist(ax, ay, bx, by) {
+    return Math.sqrt((ax - bx) ** 2 + (ay - by) ** 2);
+  }
+
+  function getHoveredNode() {
+    let closest = null, minD = 36;
+    for (const n of nodes) {
+      const d = dist(mouse.x, mouse.y, n.x, n.y);
+      if (d < minD) { minD = d; closest = n; }
+    }
+    return closest;
+  }
+
+  function hexAlpha(hex, a) {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r},${g},${b},${a})`;
+  }
+
+  function roundRect(cx, x, y, w, h, r) {
+    cx.beginPath();
+    cx.moveTo(x + r, y);
+    cx.lineTo(x + w - r, y);
+    cx.quadraticCurveTo(x + w, y, x + w, y + r);
+    cx.lineTo(x + w, y + h - r);
+    cx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    cx.lineTo(x + r, y + h);
+    cx.quadraticCurveTo(x, y + h, x, y + h - r);
+    cx.lineTo(x, y + r);
+    cx.quadraticCurveTo(x, y, x + r, y);
+    cx.closePath();
+  }
+
+  function drawGrid() {
+    ctx.save();
+    ctx.strokeStyle = "rgba(30,35,55,0.25)";
+    ctx.lineWidth = 0.4;
+    const step = 40;
+    for (let x = 0; x <= W; x += step) {
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+    }
+    for (let y = 0; y <= H; y += step) {
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function drawLayers() {
+    ctx.save();
+    for (let i = 0; i < layerY.length; i++) {
+      const y = layerY[i];
+      ctx.beginPath();
+      ctx.moveTo(20, y);
+      ctx.lineTo(W - 20, y);
+      ctx.strokeStyle = "rgba(45,52,85,0.3)";
+      ctx.lineWidth = 0.5;
+      ctx.setLineDash([4, 8]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.font = '400 9px "JetBrains Mono", monospace';
+      ctx.fillStyle = "rgba(90,106,133,0.5)";
+      ctx.textAlign = "left";
+      ctx.fillText(layerLabels[i], 20, y - 6);
+    }
+    ctx.restore();
+  }
+
+  let animId = 0;
+  let time = 0;
+
+  function draw() {
+    time += 0.016;
+
+    if (mouse.x > 0) {
+      if (smoothMouse.x < 0) smoothMouse = { ...mouse };
+      smoothMouse.x += (mouse.x - smoothMouse.x) * 0.15;
+      smoothMouse.y += (mouse.y - smoothMouse.y) * 0.15;
+    } else {
+      smoothMouse = { x: -999, y: -999 };
+    }
+
+    const mx = smoothMouse.x, my = smoothMouse.y;
+    const hasM = mx > 0;
+    const hovered = getHoveredNode();
+
+    const hoveredIds = new Set();
+    const connectedEdges = [];
+    if (hovered) {
+      hoveredIds.add(hovered.id);
+      edges.forEach((e) => {
+        if (e.a === hovered.id || e.b === hovered.id) {
+          hoveredIds.add(e.a);
+          hoveredIds.add(e.b);
+          connectedEdges.push(e);
+        }
+      });
+    }
+
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = BG;
+    ctx.fillRect(0, 0, W, H);
+
+    drawGrid();
+    drawLayers();
+
+    if (hovered) {
+      const grad = ctx.createRadialGradient(
+        hovered.x, hovered.y, 0,
+        hovered.x, hovered.y, 180
+      );
+      grad.addColorStop(0, hexAlpha(hovered.warm ? WARM : ACCENT, 0.04));
+      grad.addColorStop(1, "transparent");
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, W, H);
+    }
+
+    if (hasM) {
+      const sorted = [...nodes]
+        .sort((a, b) => dist(mx, my, a.x, a.y) - dist(mx, my, b.x, b.y))
+        .slice(0, 5);
+      sorted.forEach((n) => {
+        const d = dist(mx, my, n.x, n.y);
+        if (d > 220) return;
+        const alpha = (1 - d / 220) * 0.12;
+        ctx.beginPath();
+        ctx.moveTo(mx, my);
+        ctx.lineTo(n.x, n.y);
+        ctx.strokeStyle = n.warm
+          ? `rgba(255,107,53,${alpha})`
+          : `rgba(79,126,255,${alpha})`;
+        ctx.lineWidth = 0.6;
+        ctx.setLineDash([2, 6]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      });
+    }
+
+    edges.forEach((e) => {
+      const a = nodeMap[e.a];
+      const b = nodeMap[e.b];
+      const cp = cpOf(a, b);
+      const isRelated = hoveredIds.has(e.a) || hoveredIds.has(e.b);
+      const isFocused = hovered && (e.a === hovered.id || e.b === hovered.id);
+      const isActive = e.active;
+
+      let alpha, width, color;
+      if (!hovered) {
+        alpha = isActive ? 0.4 : 0.1;
+        width = isActive ? 1.4 : 0.6;
+        color = isActive ? ACCENT : DIM;
+      } else if (isFocused) {
+        alpha = isActive ? 0.9 : 0.5;
+        width = isActive ? 2.0 : 1.2;
+        color = isActive ? ACCENT : "#8899CC";
+      } else {
+        alpha = 0.04;
+        width = 0.4;
+        color = DIM;
+      }
+
+      if (isFocused && isActive) {
+        ctx.beginPath();
+        ctx.moveTo(a.x, a.y);
+        ctx.quadraticCurveTo(cp.cx, cp.cy, b.x, b.y);
+        ctx.strokeStyle = hexAlpha(ACCENT, 0.15);
+        ctx.lineWidth = width + 6;
+        ctx.stroke();
+      }
+
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.quadraticCurveTo(cp.cx, cp.cy, b.x, b.y);
+      ctx.strokeStyle = hexAlpha(color, alpha);
+      ctx.lineWidth = width;
+      ctx.stroke();
+
+      if (isFocused && isActive) {
+        const steps = Math.floor(e.weight * 5);
+        for (let s = 1; s < steps; s++) {
+          const t = s / (steps + 1);
+          const pt = bezierPoint(a.x, a.y, b.x, b.y, cp.cx, cp.cy, t);
+          ctx.beginPath();
+          ctx.arc(pt.x, pt.y, 1.2, 0, Math.PI * 2);
+          ctx.fillStyle = hexAlpha(ACCENT, 0.3);
+          ctx.fill();
+        }
+      }
+    });
+
+    particles.forEach((p) => {
+      const a = nodeMap[p.edge.a];
+      const b = nodeMap[p.edge.b];
+      const cp = cpOf(a, b);
+      const pt = bezierPoint(a.x, a.y, b.x, b.y, cp.cx, cp.cy, p.t);
+      const isFocused = hovered && (p.edge.a === hovered.id || p.edge.b === hovered.id);
+      const alpha = !hovered ? 0.9 : isFocused ? 1 : 0.08;
+      const radius = isFocused ? p.size * 1.3 : p.size;
+
+      p.trail.push({ x: pt.x, y: pt.y, life: 1.0 });
+      if (p.trail.length > 8) p.trail.shift();
+
+      p.trail.forEach((tp, ti) => {
+        tp.life -= 0.12;
+        if (tp.life <= 0) return;
+        const trailAlpha = tp.life * alpha * 0.4;
+        const trailR = radius * tp.life * 0.6;
+        ctx.beginPath();
+        ctx.arc(tp.x, tp.y, trailR, 0, Math.PI * 2);
+        ctx.fillStyle = hexAlpha(ACCENT, trailAlpha);
+        ctx.fill();
+      });
+
+      ctx.beginPath();
+      ctx.arc(pt.x, pt.y, radius, 0, Math.PI * 2);
+      ctx.fillStyle = hexAlpha(ACCENT, alpha);
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.arc(pt.x, pt.y, radius * 3, 0, Math.PI * 2);
+      ctx.fillStyle = hexAlpha(ACCENT, alpha * 0.2);
+      ctx.fill();
+
+      p.t = (p.t + p.speed) % 1;
+    });
+
+    pulses.forEach((p) => {
+      const n = p.node;
+      const maxR = n.gateway ? 28 : 20;
+      const isH = hovered && hoveredIds.has(n.id);
+
+      for (let ring = 0; ring < p.rings; ring++) {
+        const rt = (p.t + ring * 0.33) % 1;
+        const ringR = rt * maxR;
+        const alpha = (1 - rt) * (n.gateway ? 0.4 : 0.25);
+
+        if (!hovered || isH) {
+          ctx.beginPath();
+          ctx.arc(n.x, n.y, ringR, 0, Math.PI * 2);
+          const c = n.warm ? WARM : ACCENT;
+          ctx.strokeStyle = hexAlpha(c, alpha * (isH ? 2.0 : 1));
+          ctx.lineWidth = 0.5;
+          ctx.stroke();
+        }
+      }
+      p.t = (p.t + p.speed) % 1;
+    });
+
+    nodes.forEach((n) => {
+      const isH = hovered && hoveredIds.has(n.id);
+      const isCentral = hovered && hovered.id === n.id;
+      const c = n.warm ? WARM : ACCENT;
+      const rMult = isCentral ? 1.3 : isH ? 1.15 : 1;
+      const r = n.r * rMult;
+
+      if (isH) {
+        const glowR = r + 12;
+        const grad = ctx.createRadialGradient(n.x, n.y, r, n.x, n.y, glowR);
+        grad.addColorStop(0, hexAlpha(c, 0.15));
+        grad.addColorStop(1, "transparent");
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(n.x, n.y, glowR, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, r + 4, 0, Math.PI * 2);
+      ctx.fillStyle = BG;
+      ctx.strokeStyle = hexAlpha(BORDER, !hovered || isH ? 0.8 : 0.15);
+      ctx.lineWidth = 1;
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, r, 0, Math.PI * 2);
+      ctx.fillStyle = isCentral ? SURF2 : SURF;
+      ctx.strokeStyle = hexAlpha(c, !hovered || isH ? isCentral ? 1 : 0.8 : 0.15);
+      ctx.lineWidth = isCentral ? 2 : 1.4;
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, r * 0.4, 0, Math.PI * 2);
+      ctx.fillStyle = hexAlpha(c, !hovered || isH ? 1 : 0.12);
+      ctx.fill();
+
+      if (n.gateway) {
+        ctx.beginPath();
+        ctx.arc(n.x, n.y, r * 0.15, 0, Math.PI * 2);
+        ctx.fillStyle = hexAlpha("#FFFFFF", isH ? 0.9 : 0.3);
+        ctx.fill();
+      }
+
+      ctx.font = `500 ${isCentral ? 10 : 9}px "JetBrains Mono", monospace`;
+      ctx.textAlign = "center";
+      ctx.fillStyle =
+        !hovered || isH
+          ? isCentral
+            ? c
+            : hexAlpha(MUTED, 0.9)
+          : hexAlpha(MUTED, 0.12);
+      ctx.fillText(n.label, n.x, n.y + r + 16);
+
+      if (n.gateway) {
+        ctx.font = '400 7px "JetBrains Mono", monospace';
+        ctx.fillStyle = hexAlpha(MUTED2, isH ? 0.7 : 0.2);
+        ctx.fillText("GATEWAY", n.x, n.y + r + 26);
+      }
+    });
+
+    if (hovered) {
+      const fullLabels = {
+        ingress: "Ingress Gateway", auth: "Auth Service", api: "API Gateway",
+        queue: "Message Queue", booking: "Booking Engine", matching: "Match Engine",
+        dispatch: "Dispatch Layer", notify: "Notification Hub", media: "Media Service",
+        billing: "Billing Service", cms: "Content CMS", reporting: "Reporting",
+        storage: "Object Storage", cache: "Redis Cache", egress: "Egress Gateway",
+      };
+      const label = fullLabels[hovered.id] || hovered.label;
+      const connections = edges.filter(e => e.a === hovered.id || e.b === hovered.id).length;
+      const activeConns = edges.filter(e => (e.a === hovered.id || e.b === hovered.id) && e.active).length;
+      const tw = ctx.measureText(label).width + 100;
+      const tx = Math.min(Math.max(hovered.x - tw / 2, 12), W - tw - 12);
+      let ty = hovered.y - hovered.r - 50;
+      const tooltipH = hovered.gateway ? 52 : 42;
+      if (ty < 12) ty = hovered.y + hovered.r + 14;
+
+      ctx.save();
+      ctx.shadowColor = "rgba(0,0,0,0.5)";
+      ctx.shadowBlur = 20;
+      ctx.shadowOffsetY = 4;
+
+      ctx.fillStyle = "rgba(14,17,23,0.96)";
+      ctx.strokeStyle = hexAlpha(hovered.warm ? WARM : ACCENT, 0.4);
+      ctx.lineWidth = 1;
+      roundRect(ctx, tx, ty, tw, tooltipH, 8);
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+
+      ctx.fillStyle = hovered.warm ? WARM : ACCENT;
+      ctx.fillRect(tx + 8, ty + 8, 3, tooltipH - 16);
+
+      ctx.font = '500 12px "JetBrains Mono", monospace';
+      ctx.fillStyle = TEXT;
+      ctx.textAlign = "left";
+      ctx.fillText(label, tx + 18, ty + 20);
+
+      ctx.font = '400 10px "JetBrains Mono", monospace';
+      ctx.fillStyle = hexAlpha(MUTED, 0.8);
+      ctx.fillText(`${activeConns}/${connections} active connections`, tx + 18, ty + 34);
+
+      if (hovered.gateway) {
+        ctx.fillStyle = hexAlpha(ACCENT, 0.6);
+        ctx.fillText("Critical path node", tx + 18, ty + 46);
+      }
+    }
+
+    if (hasM) {
+      ctx.beginPath();
+      ctx.arc(mx, my, 2.5, 0, Math.PI * 2);
+      ctx.fillStyle = hexAlpha(ACCENT, 0.6);
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.arc(mx, my, 8, 0, Math.PI * 2);
+      ctx.strokeStyle = hexAlpha(ACCENT, 0.15);
+      ctx.lineWidth = 0.8;
+      ctx.stroke();
+    }
+
+    const scanY = (time * 40) % (H + 100) - 50;
+    const scanGrad = ctx.createLinearGradient(0, scanY - 20, 0, scanY + 20);
+    scanGrad.addColorStop(0, "transparent");
+    scanGrad.addColorStop(0.5, "rgba(79,126,255,0.02)");
+    scanGrad.addColorStop(1, "transparent");
+    ctx.fillStyle = scanGrad;
+    ctx.fillRect(0, scanY - 20, W, 40);
+
+    animId = requestAnimationFrame(draw);
+  }
+
+  animId = requestAnimationFrame(draw);
+})();
+</script>
+</body>
+</html>
