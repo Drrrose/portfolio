@@ -456,11 +456,11 @@ function HeroSection({
   return (
     <section
       id="hero"
-      className="relative mx-auto grid min-h-screen w-full max-w-7xl items-center gap-12 px-6 py-20 md:px-10 lg:grid-cols-[1.1fr_0.9fr] lg:px-20"
+      className="relative mx-auto grid min-h-[calc(100vh-80px)] w-full max-w-7xl grid-cols-1 items-center gap-10 py-12 sm:py-16 md:px-10 lg:grid-cols-[1fr_1.15fr] lg:gap-12 lg:px-12"
     >
-      <div className="relative z-10 max-w-3xl">
+      <div className="relative z-10 flex flex-col justify-center max-w-2xl lg:max-w-none">
         <motion.p
-          className="font-mono text-xs uppercase leading-none text-accent"
+          className="font-mono text-xs font-semibold uppercase tracking-widest text-blue-400"
           variants={CHILD_VARIANTS}
           initial={prefersReduced ? "visible" : "hidden"}
           animate="visible"
@@ -469,7 +469,7 @@ function HeroSection({
         </motion.p>
         <motion.h1
           aria-label={name}
-          className="mt-5 flex flex-wrap overflow-hidden bg-[linear-gradient(90deg,var(--text-primary),var(--accent))] bg-clip-text font-display text-6xl font-bold leading-none tracking-normal text-transparent md:text-8xl"
+          className="mt-3 flex flex-wrap overflow-hidden bg-gradient-to-r from-white via-slate-100 to-blue-400 bg-clip-text font-display text-5xl sm:text-7xl lg:text-8xl font-bold leading-[1.05] tracking-tight text-transparent"
           variants={NAME_VARIANTS}
           initial={prefersReduced ? "visible" : "hidden"}
           animate="visible"
@@ -478,7 +478,7 @@ function HeroSection({
             <motion.span
               key={`${letter}-${index}`}
               aria-hidden="true"
-              className={letter === " " ? "w-4 md:w-6" : "inline-block"}
+              className={letter === " " ? "w-3 sm:w-5" : "inline-block"}
               variants={prefersReduced ? undefined : LETTER_VARIANTS}
             >
               {letter}
@@ -486,30 +486,30 @@ function HeroSection({
           ))}
         </motion.h1>
         <motion.div
-          className="mt-5 flex flex-wrap items-center gap-3 font-mono text-sm text-text-muted"
+          className="mt-4 flex flex-wrap items-center gap-3 font-mono text-xs sm:text-sm font-medium text-slate-400"
           variants={delayVariants(0.1)}
           initial={prefersReduced ? "visible" : "hidden"}
           animate="visible"
         >
-          <span>Heliopolis, Cairo</span>
-          <span className="text-text-dim">&middot;</span>
+          <span className="text-slate-300">Heliopolis, Cairo</span>
+          <span className="text-slate-600">&middot;</span>
           <span className="inline-flex items-center gap-2">
             <span className="status-dot-pulse h-2 w-2 rounded-full bg-[#2CFF97]" />
-            Available
+            <span className="text-emerald-400">Available for Opportunities</span>
           </span>
         </motion.div>
         <motion.p
-          className="mt-7 max-w-2xl text-lg leading-8 text-text-muted md:text-xl"
+          className="mt-6 max-w-xl text-base sm:text-lg md:text-xl font-normal leading-relaxed text-slate-300"
           variants={delayVariants(0.2)}
           initial={prefersReduced ? "visible" : "hidden"}
           animate="visible"
         >
           Detail-oriented Mid-level Backend Developer with two years of professional experience in
           building robust, large-scale web applications using PHP and Laravel. Skilled in database
-          design, RESTful APIs, and frontend integration.
+          design, RESTful APIs, and cloud integrations.
         </motion.p>
         <motion.div
-          className="mt-7 flex flex-wrap gap-3"
+          className="mt-6 flex flex-wrap gap-2.5"
           variants={delayVariants(0.35)}
           initial={prefersReduced ? "visible" : "hidden"}
           animate="visible"
@@ -521,7 +521,7 @@ function HeroSection({
           ))}
         </motion.div>
         <motion.div
-          className="mt-10 flex flex-wrap gap-4"
+          className="mt-8 flex flex-wrap items-center gap-4"
           variants={delayVariants(0.5)}
           initial={prefersReduced ? "visible" : "hidden"}
           animate="visible"
@@ -537,10 +537,31 @@ function HeroSection({
             Resume &rarr;
           </CtaButton>
         </motion.div>
+
+        {/* Bottom Left Metric Counters */}
+        <motion.div
+          className="mt-10 max-w-xl border-t border-slate-800/80 pt-6 grid grid-cols-3 gap-4 sm:gap-6"
+          variants={delayVariants(0.6)}
+          initial={prefersReduced ? "visible" : "hidden"}
+          animate="visible"
+        >
+          <div>
+            <p className="font-mono text-xl sm:text-2xl font-bold tracking-tight text-white">2+ Yrs</p>
+            <p className="mt-0.5 text-xs text-slate-400 font-sans">Backend Experience</p>
+          </div>
+          <div>
+            <p className="font-mono text-xl sm:text-2xl font-bold tracking-tight text-white">10+</p>
+            <p className="mt-0.5 text-xs text-slate-400 font-sans">Production Products</p>
+          </div>
+          <div>
+            <p className="font-mono text-xl sm:text-2xl font-bold tracking-tight text-white">Agoda / eZee</p>
+            <p className="mt-0.5 text-xs text-slate-400 font-sans">Live Integrations</p>
+          </div>
+        </motion.div>
       </div>
 
       <motion.div
-        className="relative z-0 h-[420px] opacity-60 md:h-[520px] lg:h-[620px] lg:opacity-100"
+        className="relative z-0 h-[480px] sm:h-[580px] lg:h-[650px] xl:h-[700px] w-full flex items-center justify-center pointer-events-auto"
         variants={GRAPH_CONTAINER_VARIANTS}
         initial={prefersReduced ? "visible" : "hidden"}
         animate="visible"
@@ -552,6 +573,39 @@ function HeroSection({
   );
 }
 
+interface NodeItem {
+  id: string;
+  x: number;
+  y: number;
+  r: number;
+  label: string;
+  warm: boolean;
+  gateway: boolean;
+  layer: number;
+}
+
+interface EdgeItem {
+  a: string;
+  b: string;
+  active: boolean;
+  weight: number;
+}
+
+interface ParticleItem {
+  edge: EdgeItem;
+  t: number;
+  speed: number;
+  size: number;
+  trail: { x: number; y: number; life: number }[];
+}
+
+interface PulseItem {
+  node: NodeItem;
+  t: number;
+  speed: number;
+  rings: number;
+}
+
 function HeroCircuitGraph({ prefersReduced }: { prefersReduced: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -560,95 +614,95 @@ function HeroCircuitGraph({ prefersReduced }: { prefersReduced: boolean }) {
     if (!canvas) return;
 
     const ctx = canvas.getContext("2d")!;
-    const dpr = Math.min(devicePixelRatio || 1, 2);
-    const W = 620;
-    const H = 600;
+    if (!ctx) return;
 
-    canvas.width = W * dpr;
-    canvas.height = H * dpr;
-    ctx.scale(dpr, dpr);
+    const BASE_W = 720;
+    const BASE_H = 540;
 
     const ACCENT = "#4F7EFF";
     const WARM = "#FF6B35";
-    const DIM = "rgba(45,52,85,0.8)";
-    const BG = "#080A0F";
-    const SURF = "#0E1117";
-    const BORDER = "#1C2030";
-    const MUTED = "#6B7799";
+    const DIM = "rgba(45,52,85,0.4)";
+    const SURF = "#0C0F18";
+    const SURF2 = "#141926";
+    const BORDER = "#1E2638";
+    const MUTED = "#A0AEC0";
+    const MUTED2 = "#718096";
+    const TEXT = "#F8FAFC";
 
-    const nodes = [
-      { id: "ingress", x: 82, y: 90, r: 9, label: "INGRESS", warm: false, gateway: true },
-      { id: "auth", x: 212, y: 76, r: 6, label: "AUTH", warm: false, gateway: false },
-      { id: "api", x: 330, y: 90, r: 10, label: "API", warm: true, gateway: true },
-      { id: "queue", x: 458, y: 78, r: 6, label: "QUEUE", warm: false, gateway: false },
-      { id: "booking", x: 140, y: 200, r: 6, label: "BOOKING", warm: false, gateway: false },
-      { id: "matching", x: 272, y: 208, r: 6, label: "MATCHING", warm: false, gateway: false },
-      { id: "dispatch", x: 382, y: 200, r: 6, label: "DISPATCH", warm: false, gateway: false },
-      { id: "notify", x: 512, y: 212, r: 6, label: "NOTIFY", warm: false, gateway: false },
-      { id: "media", x: 96, y: 316, r: 6, label: "MEDIA", warm: false, gateway: false },
-      { id: "billing", x: 200, y: 332, r: 6, label: "BILLING", warm: false, gateway: false },
-      { id: "cms", x: 330, y: 314, r: 6, label: "CMS", warm: false, gateway: false },
-      { id: "reporting", x: 458, y: 326, r: 6, label: "REPORT", warm: false, gateway: false },
-      { id: "storage", x: 150, y: 444, r: 6, label: "STORAGE", warm: false, gateway: false },
-      { id: "cache", x: 322, y: 444, r: 6, label: "CACHE", warm: false, gateway: false },
-      { id: "egress", x: 498, y: 444, r: 9, label: "EGRESS", warm: false, gateway: true },
+    const nodes: NodeItem[] = [
+      { id: "ingress", x: 60, y: 55, r: 14, label: "INGRESS", warm: false, gateway: true, layer: 0 },
+      { id: "auth", x: 230, y: 45, r: 10, label: "AUTH", warm: false, gateway: false, layer: 0 },
+      { id: "api", x: 410, y: 55, r: 16, label: "API GATEWAY", warm: true, gateway: true, layer: 0 },
+      { id: "queue", x: 610, y: 45, r: 10, label: "QUEUE", warm: false, gateway: false, layer: 0 },
+      { id: "booking", x: 130, y: 175, r: 10, label: "BOOKING", warm: false, gateway: false, layer: 1 },
+      { id: "matching", x: 310, y: 185, r: 10, label: "MATCHING", warm: false, gateway: false, layer: 1 },
+      { id: "dispatch", x: 490, y: 175, r: 10, label: "DISPATCH", warm: false, gateway: false, layer: 1 },
+      { id: "notify", x: 640, y: 190, r: 10, label: "NOTIFY", warm: false, gateway: false, layer: 1 },
+      { id: "media", x: 70, y: 310, r: 10, label: "MEDIA", warm: false, gateway: false, layer: 2 },
+      { id: "billing", x: 220, y: 320, r: 10, label: "BILLING", warm: false, gateway: false, layer: 2 },
+      { id: "cms", x: 410, y: 310, r: 10, label: "CMS", warm: false, gateway: false, layer: 2 },
+      { id: "reporting", x: 590, y: 320, r: 10, label: "REPORT", warm: false, gateway: false, layer: 2 },
+      { id: "storage", x: 150, y: 445, r: 10, label: "STORAGE", warm: false, gateway: false, layer: 3 },
+      { id: "cache", x: 400, y: 445, r: 10, label: "CACHE", warm: false, gateway: false, layer: 3 },
+      { id: "egress", x: 630, y: 445, r: 14, label: "EGRESS", warm: false, gateway: true, layer: 3 },
     ];
 
-    const nodeMap: Record<string, typeof nodes[0]> = {};
+    const nodeMap: Record<string, NodeItem> = {};
     nodes.forEach((n) => (nodeMap[n.id] = n));
 
-    const edges = [
-      { a: "ingress", b: "auth", active: true },
-      { a: "auth", b: "api", active: true },
-      { a: "api", b: "queue", active: false },
-      { a: "ingress", b: "booking", active: false },
-      { a: "auth", b: "matching", active: true },
-      { a: "api", b: "dispatch", active: true },
-      { a: "queue", b: "notify", active: true },
-      { a: "booking", b: "billing", active: true },
-      { a: "matching", b: "cms", active: false },
-      { a: "dispatch", b: "reporting", active: true },
-      { a: "notify", b: "reporting", active: false },
-      { a: "media", b: "booking", active: false },
-      { a: "media", b: "storage", active: true },
-      { a: "billing", b: "cache", active: false },
-      { a: "cms", b: "cache", active: true },
-      { a: "reporting", b: "egress", active: true },
-      { a: "cache", b: "egress", active: false },
+    const edges: EdgeItem[] = [
+      { a: "ingress", b: "auth", active: true, weight: 0.8 },
+      { a: "auth", b: "api", active: true, weight: 1.0 },
+      { a: "api", b: "queue", active: false, weight: 0.3 },
+      { a: "ingress", b: "booking", active: false, weight: 0.2 },
+      { a: "auth", b: "matching", active: true, weight: 0.9 },
+      { a: "api", b: "dispatch", active: true, weight: 0.85 },
+      { a: "queue", b: "notify", active: true, weight: 0.7 },
+      { a: "booking", b: "billing", active: true, weight: 0.75 },
+      { a: "matching", b: "cms", active: false, weight: 0.2 },
+      { a: "dispatch", b: "reporting", active: true, weight: 0.6 },
+      { a: "notify", b: "reporting", active: false, weight: 0.15 },
+      { a: "media", b: "booking", active: false, weight: 0.1 },
+      { a: "media", b: "storage", active: true, weight: 0.9 },
+      { a: "billing", b: "cache", active: false, weight: 0.25 },
+      { a: "cms", b: "cache", active: true, weight: 0.8 },
+      { a: "reporting", b: "egress", active: true, weight: 0.5 },
+      { a: "cache", b: "egress", active: false, weight: 0.2 },
     ];
 
-    function cpOf(a: typeof nodes[0], b: typeof nodes[0]) {
-      const mx = (a.x + b.x) / 2;
-      const my = (a.y + b.y) / 2;
-      const dx = b.x - a.x, dy = b.y - a.y;
-      const perp = 0.18;
-      return { cx: mx - dy * perp, cy: my + dx * perp };
-    }
-
     const activeEdges = edges.filter((e) => e.active);
-    const dots = activeEdges.map((e, i) => ({
+    const particles: ParticleItem[] = activeEdges.map((e, i) => ({
       edge: e,
-      t: (i * 0.13) % 1,
-      speed: 0.0025 + (i % 5) * 0.0006,
+      t: (i * 0.17) % 1,
+      speed: 0.003 + (i % 7) * 0.0008,
+      size: 2.2 + e.weight * 3.0,
+      trail: [],
     }));
 
-    const pulses = nodes.map((n, i) => ({
+    const pulses: PulseItem[] = nodes.map((n, i) => ({
       node: n,
-      t: (i * 0.12) % 1,
-      speed: 0.004 + (i % 4) * 0.001,
+      t: (i * 0.15) % 1,
+      speed: 0.0035 + (i % 5) * 0.0012,
+      rings: 3,
     }));
+
+    const layerY = [120, 245, 375, 495];
+    const layerLabels = ["Edge Layer", "Core Services", "Data Layer", "Infrastructure"];
 
     let mouse = { x: -999, y: -999 };
+    let smoothMouse = { x: -999, y: -999 };
 
     function onMouseMove(e: MouseEvent) {
       const rect = canvas!.getBoundingClientRect();
-      const sx = W / rect.width;
-      const sy = H / rect.height;
+      const scale = Math.min(rect.width / BASE_W, rect.height / BASE_H);
+      const offsetX = (rect.width - BASE_W * scale) / 2;
+      const offsetY = (rect.height - BASE_H * scale) / 2;
       mouse = {
-        x: (e.clientX - rect.left) * sx,
-        y: (e.clientY - rect.top) * sy,
+        x: (e.clientX - rect.left - offsetX) / scale,
+        y: (e.clientY - rect.top - offsetY) / scale,
       };
     }
+
     function onMouseLeave() {
       mouse = { x: -999, y: -999 };
     }
@@ -656,11 +710,18 @@ function HeroCircuitGraph({ prefersReduced }: { prefersReduced: boolean }) {
     canvas.addEventListener("mousemove", onMouseMove);
     canvas.addEventListener("mouseleave", onMouseLeave);
 
+    function cpOf(a: NodeItem, b: NodeItem, strength = 0.22) {
+      const mx = (a.x + b.x) / 2;
+      const my = (a.y + b.y) / 2;
+      const dx = b.x - a.x, dy = b.y - a.y;
+      return { cx: mx - dy * strength, cy: my + dx * strength };
+    }
+
     function bezierPoint(
       ax: number, ay: number,
       bx: number, by: number,
       cx: number, cy: number,
-      t: number,
+      t: number
     ) {
       const mt = 1 - t;
       return {
@@ -674,13 +735,10 @@ function HeroCircuitGraph({ prefersReduced }: { prefersReduced: boolean }) {
     }
 
     function getHoveredNode() {
-      let closest: typeof nodes[0] | null = null, minD = 40;
+      let closest: NodeItem | null = null, minD = 42;
       for (const n of nodes) {
         const d = dist(mouse.x, mouse.y, n.x, n.y);
-        if (d < minD) {
-          minD = d;
-          closest = n;
-        }
+        if (d < minD) { minD = d; closest = n; }
       }
       return closest;
     }
@@ -694,7 +752,7 @@ function HeroCircuitGraph({ prefersReduced }: { prefersReduced: boolean }) {
 
     function roundRect(
       cx: CanvasRenderingContext2D,
-      x: number, y: number, w: number, h: number, r: number,
+      x: number, y: number, w: number, h: number, r: number
     ) {
       cx.beginPath();
       cx.moveTo(x + r, y);
@@ -709,12 +767,90 @@ function HeroCircuitGraph({ prefersReduced }: { prefersReduced: boolean }) {
       cx.closePath();
     }
 
+    function drawLayers() {
+      ctx.save();
+      ctx.font = '500 10px "JetBrains Mono", monospace';
+      ctx.fillStyle = "rgba(148, 163, 184, 0.4)";
+      ctx.textAlign = "left";
+      for (let i = 0; i < layerY.length; i++) {
+        ctx.fillText(layerLabels[i], 20, layerY[i] - 7);
+      }
+      ctx.restore();
+    }
+
+    function drawAmbientGlows() {
+      ctx.save();
+      // Ambient glow for API Gateway
+      const apiNode = nodeMap["api"];
+      if (apiNode) {
+        const grad = ctx.createRadialGradient(apiNode.x, apiNode.y, 10, apiNode.x, apiNode.y, 180);
+        grad.addColorStop(0, "rgba(255,107,53,0.07)");
+        grad.addColorStop(1, "transparent");
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(apiNode.x, apiNode.y, 180, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      // Ambient glow for Ingress Gateway
+      const ingressNode = nodeMap["ingress"];
+      if (ingressNode) {
+        const grad = ctx.createRadialGradient(ingressNode.x, ingressNode.y, 10, ingressNode.x, ingressNode.y, 160);
+        grad.addColorStop(0, "rgba(79,126,255,0.06)");
+        grad.addColorStop(1, "transparent");
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(ingressNode.x, ingressNode.y, 160, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
     let animId = 0;
+    let time = 0;
 
     function draw() {
-      ctx.clearRect(0, 0, W, H);
+      time += 0.016;
 
+      const rect = canvas!.getBoundingClientRect();
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+      if (rect.width === 0 || rect.height === 0) {
+        animId = requestAnimationFrame(draw);
+        return;
+      }
+
+      const targetW = Math.floor(rect.width * dpr);
+      const targetH = Math.floor(rect.height * dpr);
+
+      if (canvas!.width !== targetW || canvas!.height !== targetH) {
+        canvas!.width = targetW;
+        canvas!.height = targetH;
+      }
+
+      const scale = Math.min(rect.width / BASE_W, rect.height / BASE_H);
+      const offsetX = (rect.width - BASE_W * scale) / 2;
+      const offsetY = (rect.height - BASE_H * scale) / 2;
+
+      ctx.save();
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, canvas!.width, canvas!.height);
+      ctx.restore();
+
+      ctx.save();
+      ctx.setTransform(dpr * scale, 0, 0, dpr * scale, dpr * offsetX, dpr * offsetY);
+
+      if (mouse.x > 0) {
+        if (smoothMouse.x < 0) smoothMouse = { ...mouse };
+        smoothMouse.x += (mouse.x - smoothMouse.x) * 0.15;
+        smoothMouse.y += (mouse.y - smoothMouse.y) * 0.15;
+      } else {
+        smoothMouse = { x: -999, y: -999 };
+      }
+
+      const mx = smoothMouse.x, my = smoothMouse.y;
+      const hasM = mx > 0;
       const hovered = getHoveredNode();
+
       const hoveredIds = new Set<string>();
       if (hovered) {
         hoveredIds.add(hovered.id);
@@ -726,52 +862,72 @@ function HeroCircuitGraph({ prefersReduced }: { prefersReduced: boolean }) {
         });
       }
 
-      const mx = mouse.x, my = mouse.y;
-      const hasM = mx > 0;
+      drawLayers();
+      drawAmbientGlows();
 
-      // mouse proximity glow lines from nearest 4 nodes
+      if (hovered) {
+        const grad = ctx.createRadialGradient(
+          hovered.x, hovered.y, 0,
+          hovered.x, hovered.y, 200
+        );
+        grad.addColorStop(0, hexAlpha(hovered.warm ? WARM : ACCENT, 0.08));
+        grad.addColorStop(1, "transparent");
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(hovered.x, hovered.y, 200, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
       if (hasM) {
         const sorted = [...nodes]
           .sort((a, b) => dist(mx, my, a.x, a.y) - dist(mx, my, b.x, b.y))
-          .slice(0, 4);
+          .slice(0, 5);
         sorted.forEach((n) => {
           const d = dist(mx, my, n.x, n.y);
-          if (d > 180) return;
-          const alpha = (1 - d / 180) * 0.18;
+          if (d > 240) return;
+          const alpha = (1 - d / 240) * 0.18;
           ctx.beginPath();
           ctx.moveTo(mx, my);
           ctx.lineTo(n.x, n.y);
           ctx.strokeStyle = n.warm
             ? `rgba(255,107,53,${alpha})`
             : `rgba(79,126,255,${alpha})`;
-          ctx.lineWidth = 0.8;
-          ctx.setLineDash([3, 5]);
+          ctx.lineWidth = 0.7;
+          ctx.setLineDash([3, 6]);
           ctx.stroke();
           ctx.setLineDash([]);
         });
       }
 
-      // draw edges
       edges.forEach((e) => {
         const a = nodeMap[e.a];
         const b = nodeMap[e.b];
         const cp = cpOf(a, b);
-        const isRelated = hoveredIds.has(e.a) || hoveredIds.has(e.b);
         const isFocused = hovered && (e.a === hovered.id || e.b === hovered.id);
+        const isActive = e.active;
 
         let alpha: number, width: number, color: string;
         if (!hovered) {
-          alpha = e.active ? 0.35 : 0.15;
-          width = e.active ? 1.2 : 0.7;
-          color = e.active ? ACCENT : DIM;
+          alpha = isActive ? 0.5 : 0.15;
+          width = isActive ? 1.6 : 0.7;
+          color = isActive ? ACCENT : DIM;
         } else if (isFocused) {
-          alpha = 0.85;
-          width = e.active ? 1.8 : 1.1;
-          color = e.active ? ACCENT : "#8899CC";
+          alpha = isActive ? 1.0 : 0.55;
+          width = isActive ? 2.4 : 1.4;
+          color = isActive ? ACCENT : "#8899CC";
         } else {
           alpha = 0.05;
           width = 0.5;
           color = DIM;
+        }
+
+        if (isFocused && isActive) {
+          ctx.beginPath();
+          ctx.moveTo(a.x, a.y);
+          ctx.quadraticCurveTo(cp.cx, cp.cy, b.x, b.y);
+          ctx.strokeStyle = hexAlpha(ACCENT, 0.22);
+          ctx.lineWidth = width + 7;
+          ctx.stroke();
         }
 
         ctx.beginPath();
@@ -780,141 +936,198 @@ function HeroCircuitGraph({ prefersReduced }: { prefersReduced: boolean }) {
         ctx.strokeStyle = hexAlpha(color, alpha);
         ctx.lineWidth = width;
         ctx.stroke();
+
+        if (isFocused && isActive) {
+          const steps = Math.floor(e.weight * 6);
+          for (let s = 1; s < steps; s++) {
+            const t = s / (steps + 1);
+            const pt = bezierPoint(a.x, a.y, b.x, b.y, cp.cx, cp.cy, t);
+            ctx.beginPath();
+            ctx.arc(pt.x, pt.y, 1.4, 0, Math.PI * 2);
+            ctx.fillStyle = hexAlpha(ACCENT, 0.4);
+            ctx.fill();
+          }
+        }
       });
 
-      // draw flow dots
       if (!prefersReduced) {
-        dots.forEach((d) => {
-          const a = nodeMap[d.edge.a];
-          const b = nodeMap[d.edge.b];
+        particles.forEach((p) => {
+          const a = nodeMap[p.edge.a];
+          const b = nodeMap[p.edge.b];
           const cp = cpOf(a, b);
-          const pt = bezierPoint(a.x, a.y, b.x, b.y, cp.cx, cp.cy, d.t);
-          const isFocused = hovered && (d.edge.a === hovered.id || d.edge.b === hovered.id);
-          const alpha = !hovered ? 0.88 : isFocused ? 1 : 0.1;
-          const radius = isFocused ? 2.4 : 1.8;
+          const pt = bezierPoint(a.x, a.y, b.x, b.y, cp.cx, cp.cy, p.t);
+          const isFocused = hovered && (p.edge.a === hovered.id || p.edge.b === hovered.id);
+          const alpha = !hovered ? 0.95 : isFocused ? 1 : 0.1;
+          const radius = isFocused ? p.size * 1.35 : p.size;
+
+          p.trail.push({ x: pt.x, y: pt.y, life: 1.0 });
+          if (p.trail.length > 8) p.trail.shift();
+
+          p.trail.forEach((tp) => {
+            tp.life -= 0.12;
+            if (tp.life <= 0) return;
+            const trailAlpha = tp.life * alpha * 0.45;
+            const trailR = radius * tp.life * 0.65;
+            ctx.beginPath();
+            ctx.arc(tp.x, tp.y, trailR, 0, Math.PI * 2);
+            ctx.fillStyle = hexAlpha(ACCENT, trailAlpha);
+            ctx.fill();
+          });
+
           ctx.beginPath();
           ctx.arc(pt.x, pt.y, radius, 0, Math.PI * 2);
           ctx.fillStyle = hexAlpha(ACCENT, alpha);
           ctx.fill();
-          d.t = (d.t + d.speed) % 1;
+
+          ctx.beginPath();
+          ctx.arc(pt.x, pt.y, radius * 3.2, 0, Math.PI * 2);
+          ctx.fillStyle = hexAlpha(ACCENT, alpha * 0.22);
+          ctx.fill();
+
+          p.t = (p.t + p.speed) % 1;
         });
       }
 
-      // draw pulse rings
       if (!prefersReduced) {
         pulses.forEach((p) => {
           const n = p.node;
-          const maxR = n.gateway ? 22 : 16;
-          const alpha = (1 - p.t) * (n.gateway ? 0.5 : 0.35);
-          const ringR = p.t * maxR;
+          const maxR = n.gateway ? 36 : 26;
           const isH = hovered && hoveredIds.has(n.id);
-          if (!hovered || isH) {
-            ctx.beginPath();
-            ctx.arc(n.x, n.y, ringR, 0, Math.PI * 2);
-            const c = n.warm ? WARM : ACCENT;
-            ctx.strokeStyle = hexAlpha(c, alpha * (isH ? 1.8 : 1));
-            ctx.lineWidth = 0.6;
-            ctx.stroke();
+
+          for (let ring = 0; ring < p.rings; ring++) {
+            const rt = (p.t + ring * 0.33) % 1;
+            const ringR = rt * maxR;
+            const alpha = (1 - rt) * (n.gateway ? 0.45 : 0.3);
+
+            if (!hovered || isH) {
+              ctx.beginPath();
+              ctx.arc(n.x, n.y, ringR, 0, Math.PI * 2);
+              const c = n.warm ? WARM : ACCENT;
+              ctx.strokeStyle = hexAlpha(c, alpha * (isH ? 2.2 : 1));
+              ctx.lineWidth = 0.6;
+              ctx.stroke();
+            }
           }
           p.t = (p.t + p.speed) % 1;
         });
       }
 
-      // draw nodes
       nodes.forEach((n) => {
         const isH = hovered && hoveredIds.has(n.id);
         const isCentral = hovered && hovered.id === n.id;
         const c = n.warm ? WARM : ACCENT;
-        const rMult = isCentral ? 1.25 : isH ? 1.1 : 1;
+        const rMult = isCentral ? 1.35 : isH ? 1.2 : 1;
         const r = n.r * rMult;
 
-        // outer shell
-        ctx.beginPath();
-        ctx.arc(n.x, n.y, r + 3.5, 0, Math.PI * 2);
-        ctx.fillStyle = BG;
-        ctx.strokeStyle = hexAlpha(BORDER, !hovered || isH ? 1 : 0.3);
-        ctx.lineWidth = 1;
-        ctx.fill();
-        ctx.stroke();
+        // Borderless glowing aura behind node when active or hovered
+        if (isH || isCentral) {
+          const glowR = r + 16;
+          const grad = ctx.createRadialGradient(n.x, n.y, r * 0.4, n.x, n.y, glowR);
+          grad.addColorStop(0, hexAlpha(c, isCentral ? 0.35 : 0.22));
+          grad.addColorStop(1, "transparent");
+          ctx.fillStyle = grad;
+          ctx.beginPath();
+          ctx.arc(n.x, n.y, glowR, 0, Math.PI * 2);
+          ctx.fill();
+        }
 
-        // ring
+        // Main node body (Filled, borderless)
         ctx.beginPath();
         ctx.arc(n.x, n.y, r, 0, Math.PI * 2);
-        ctx.fillStyle = SURF;
-        ctx.strokeStyle = hexAlpha(c, !hovered || isH ? isCentral ? 1 : 0.85 : 0.2);
-        ctx.lineWidth = isCentral ? 1.8 : 1.2;
+        ctx.fillStyle = isCentral ? SURF2 : SURF;
         ctx.fill();
-        ctx.stroke();
 
-        // core dot
+        // Inner core dot (Filled, borderless)
         ctx.beginPath();
-        ctx.arc(n.x, n.y, r * 0.38, 0, Math.PI * 2);
-        ctx.fillStyle = hexAlpha(c, !hovered || isH ? 1 : 0.15);
+        ctx.arc(n.x, n.y, r * 0.45, 0, Math.PI * 2);
+        ctx.fillStyle = hexAlpha(c, !hovered || isH ? 1 : 0.25);
         ctx.fill();
 
-        // label
-        ctx.font = '500 9px "JetBrains Mono", monospace';
+        // Gateway center dot (Filled, borderless)
+        if (n.gateway) {
+          ctx.beginPath();
+          ctx.arc(n.x, n.y, r * 0.18, 0, Math.PI * 2);
+          ctx.fillStyle = hexAlpha("#FFFFFF", isH ? 1.0 : 0.6);
+          ctx.fill();
+        }
+
+        ctx.font = `600 ${isCentral ? 11 : 10}px "JetBrains Mono", monospace`;
         ctx.textAlign = "center";
         ctx.fillStyle =
           !hovered || isH
             ? isCentral
               ? c
-              : hexAlpha(MUTED, 0.9)
-            : hexAlpha(MUTED, 0.15);
-        ctx.fillText(n.label, n.x, n.y + r + 14);
+              : hexAlpha("#F1F5F9", 0.95)
+            : hexAlpha("#94A3B8", 0.35);
+        ctx.fillText(n.label, n.x, n.y + r + 16);
+
+        if (n.gateway) {
+          ctx.font = '500 8px "JetBrains Mono", monospace';
+          ctx.fillStyle = hexAlpha(MUTED2, isH ? 0.9 : 0.4);
+          ctx.fillText("GATEWAY", n.x, n.y + r + 27);
+        }
       });
 
-      // tooltip for hovered node
       if (hovered) {
         const fullLabels: Record<string, string> = {
-          ingress: "Ingress gateway",
-          auth: "Auth service",
-          api: "API gateway",
-          queue: "Message queue",
-          booking: "Booking engine",
-          matching: "Match engine",
-          dispatch: "Dispatch layer",
-          notify: "Notification hub",
-          media: "Media service",
-          billing: "Billing service",
-          cms: "Content CMS",
-          reporting: "Reporting",
-          storage: "Object storage",
-          cache: "Redis cache",
-          egress: "Egress gateway",
+          ingress: "Ingress Gateway", auth: "Auth Service", api: "API Gateway",
+          queue: "Message Queue", booking: "Booking Engine", matching: "Match Engine",
+          dispatch: "Dispatch Layer", notify: "Notification Hub", media: "Media Service",
+          billing: "Billing Service", cms: "Content CMS", reporting: "Reporting",
+          storage: "Object Storage", cache: "Redis Cache", egress: "Egress Gateway",
         };
         const label = fullLabels[hovered.id] || hovered.label;
-        const connections = edges.filter(
-          (e) => e.a === hovered.id || e.b === hovered.id,
-        ).length;
-        const tw = ctx.measureText(label).width + 80;
-        const tx = Math.min(Math.max(hovered.x - tw / 2, 8), W - tw - 8);
-        const ty = hovered.y - hovered.r - 42;
+        const connections = edges.filter(e => e.a === hovered.id || e.b === hovered.id).length;
+        const activeConns = edges.filter(e => (e.a === hovered.id || e.b === hovered.id) && e.active).length;
+        const tw = ctx.measureText(label).width + 100;
+        const tx = Math.min(Math.max(hovered.x - tw / 2, 12), BASE_W - tw - 12);
+        let ty = hovered.y - hovered.r - 54;
+        const tooltipH = hovered.gateway ? 54 : 44;
+        if (ty < 12) ty = hovered.y + hovered.r + 14;
 
-        ctx.fillStyle = "rgba(14,17,23,0.95)";
-        ctx.strokeStyle = hexAlpha(hovered.warm ? WARM : ACCENT, 0.3);
-        ctx.lineWidth = 0.8;
-        const tooltipY = ty < 8 ? hovered.y + hovered.r + 10 : ty;
-        roundRect(ctx, tx, tooltipY, tw, 30, 6);
+        ctx.save();
+        ctx.shadowColor = "rgba(0,0,0,0.7)";
+        ctx.shadowBlur = 24;
+        ctx.shadowOffsetY = 4;
+
+        // Borderless dark tooltip card
+        ctx.fillStyle = "rgba(10,14,22,0.96)";
+        roundRect(ctx, tx, ty, tw, tooltipH, 8);
         ctx.fill();
-        ctx.stroke();
+        ctx.restore();
 
-        ctx.font = '500 11px "JetBrains Mono", monospace';
         ctx.fillStyle = hovered.warm ? WARM : ACCENT;
+        ctx.fillRect(tx + 8, ty + 8, 3, tooltipH - 16);
+
+        ctx.font = '600 12px "JetBrains Mono", monospace';
+        ctx.fillStyle = TEXT;
         ctx.textAlign = "left";
-        ctx.fillText(label, tx + 10, tooltipY + 14);
+        ctx.fillText(label, tx + 18, ty + 20);
+
         ctx.font = '400 10px "JetBrains Mono", monospace';
-        ctx.fillStyle = hexAlpha(MUTED, 0.8);
-        ctx.fillText(`${connections} connections`, tx + 10, tooltipY + 25);
+        ctx.fillStyle = hexAlpha(MUTED, 0.9);
+        ctx.fillText(`${activeConns}/${connections} active connections`, tx + 18, ty + 34);
+
+        if (hovered.gateway) {
+          ctx.fillStyle = hexAlpha(ACCENT, 0.75);
+          ctx.fillText("Critical path node", tx + 18, ty + 46);
+        }
       }
 
-      // mouse crosshair dot
       if (hasM) {
         ctx.beginPath();
-        ctx.arc(mx, my, 2, 0, Math.PI * 2);
-        ctx.fillStyle = hexAlpha(ACCENT, 0.5);
+        ctx.arc(mx, my, 3, 0, Math.PI * 2);
+        ctx.fillStyle = hexAlpha(ACCENT, 0.8);
         ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(mx, my, 9, 0, Math.PI * 2);
+        ctx.strokeStyle = hexAlpha(ACCENT, 0.25);
+        ctx.lineWidth = 0.9;
+        ctx.stroke();
       }
+
+      ctx.restore();
 
       animId = requestAnimationFrame(draw);
     }
@@ -932,13 +1145,9 @@ function HeroCircuitGraph({ prefersReduced }: { prefersReduced: boolean }) {
     <canvas
       ref={canvasRef}
       aria-hidden="true"
-      style={{
-        display: "block",
-        width: "100%",
-        height: "100%",
-        cursor: "crosshair",
-        borderRadius: "12px",
-      }}
+      tabIndex={-1}
+      className="block w-full h-full cursor-crosshair border-0 outline-none select-none"
+      style={{ border: "none", outline: "none" }}
     />
   );
 }
@@ -990,7 +1199,7 @@ function SkillBadge({
 }) {
   return (
     <motion.span
-      className="inline-flex min-h-8 items-center rounded-card border border-border bg-surface px-3 font-mono text-xs text-text-muted"
+      className="inline-flex items-center rounded-full border border-slate-800/90 bg-slate-900/80 px-3.5 py-1.5 font-mono text-xs text-slate-200 shadow-sm transition-all duration-300 hover:border-blue-500/50 hover:text-white hover:shadow-[0_0_12px_rgba(79,126,255,0.2)]"
       variants={BADGE_VARIANTS}
       initial="rest"
       whileHover={prefersReduced ? undefined : "hover"}
